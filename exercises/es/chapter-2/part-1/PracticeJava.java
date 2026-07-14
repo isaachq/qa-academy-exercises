@@ -1,22 +1,22 @@
 // ============================================================================
 // PracticeJava.java
-// CHAPTER 2 — PART 1: BASIC JAVA PROGRAMMING — Complete Reference File
-// Book: Zero to SDET — De Cero a Ingeniero de Automatización
+// CHAPTER 2 - PART 1: BASIC JAVA PROGRAMMING - Complete Reference File
+// Book: Zero to SDET - De Cero a Ingeniero de Automatizacion
 // ============================================================================
 //
 // This file contains ALL the code from Chapter 2 Part 1, written progressively
 // as it appears in the book. Use it to:
 //
-//   ✅ Compare your code with the official version line by line
-//   ✅ Verify you didn't skip any important section
-//   ✅ Debug if something doesn't work in your local version
-//   ✅ Quick reference for all concepts when you need them
+//   - Compare your code with the official version line by line
+//   - Verify you didn't skip any important section
+//   - Debug if something doesn't work in your local version
+//   - Quick reference for all concepts when you need them
 //
 // Do NOT use this file to:
 //
-//   ❌ Copy it without having written the code yourself first
-//   ❌ Skip sections thinking "I'll copy it later"
-//   ❌ Avoid practicing by writing code manually
+//   - Copy it without having written the code yourself first
+//   - Skip sections thinking "I'll copy it later"
+//   - Avoid practicing by writing code manually
 //
 // REMINDER: Writing code manually is ESSENTIAL for learning.
 // The muscle memory of writing syntax, making mistakes,
@@ -25,14 +25,16 @@
 // Go back and write it manually.
 // ============================================================================
 
+package chapter2.part1;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class PracticeJava {
 
-    // ============================================================================
+    // ========================================================================
     // METHODS OUTSIDE MAIN
-    // ============================================================================
+    // ========================================================================
 
     // Method with no parameters and no return value
     public static void greet() {
@@ -78,16 +80,16 @@ public class PracticeJava {
         }
     }
 
-    // ============================================================================
+    // ========================================================================
     // MAIN METHOD
-    // ============================================================================
+    // ========================================================================
 
     public static void main(String[] args) {
         System.out.println("=== JAVA PRACTICE ===");
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 1: VARIABLES AND DATA TYPES
-        // ============================================================================
+        // ====================================================================
 
         // --- Basic variables ---
         String name = "John";
@@ -102,9 +104,9 @@ public class PracticeJava {
         System.out.println("Is SDET: " + isSdet);
         System.out.println("Current salary: " + currentSalary);
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 2: CONSTANTS
-        // ============================================================================
+        // ====================================================================
 
         // --- Constants ---
         final double PI = 3.14159;
@@ -117,9 +119,9 @@ public class PracticeJava {
         // This would throw an error if uncommented:
         // PI = 3.14;  // Error: cannot assign a value to final variable PI
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 3: NUMBER OPERATIONS
-        // ============================================================================
+        // ====================================================================
 
         // --- Number operations ---
         System.out.println("\n=== OPERATIONS ===");
@@ -137,9 +139,9 @@ public class PracticeJava {
         double b = 3.0;
         System.out.println("Decimal division: " + (a / b));   // 3.3333...
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 4: STRING FORMATTING
-        // ============================================================================
+        // ====================================================================
 
         // --- String formatting ---
         System.out.println("\n=== STRING FORMATTING ===");
@@ -161,9 +163,9 @@ public class PracticeJava {
         double salary = 45000.5678;
         System.out.printf("Salary: $%.2f\n", salary);  // 2 decimal places
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 5: CONDITIONALS
-        // ============================================================================
+        // ====================================================================
 
         // --- Conditionals ---
         System.out.println("\n=== CONDITIONALS ===");
@@ -207,9 +209,9 @@ public class PracticeJava {
             System.out.println("Needs to gain experience");
         }
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 6: SWITCH
-        // ============================================================================
+        // ====================================================================
 
         // --- Switch ---
         System.out.println("\n=== SWITCH ===");
@@ -264,9 +266,9 @@ public class PracticeJava {
                 break;
         }
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 7: FOR LOOP
-        // ============================================================================
+        // ====================================================================
 
         // --- For loop ---
         System.out.println("\n=== FOR LOOP ===");
@@ -297,9 +299,9 @@ public class PracticeJava {
         }
         System.out.println("Liftoff!");
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 8: WHILE LOOP
-        // ============================================================================
+        // ====================================================================
 
         // --- While loop ---
         System.out.println("\n=== WHILE LOOP ===");
@@ -335,9 +337,9 @@ public class PracticeJava {
             System.out.println("Maximum attempts reached");
         }
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 9: DO-WHILE LOOP
-        // ============================================================================
+        // ====================================================================
 
         // --- Do-while loop ---
         System.out.println("\n=== DO-WHILE LOOP ===");
@@ -366,9 +368,9 @@ public class PracticeJava {
 
         System.out.println("Process completed in " + doCounter + " attempts");
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 10: BREAK AND CONTINUE
-        // ============================================================================
+        // ====================================================================
 
         // --- Break and continue ---
         System.out.println("\n=== BREAK AND CONTINUE ===");
@@ -394,9 +396,9 @@ public class PracticeJava {
 
         System.out.println("\nCode after the loop");
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 11: METHODS
-        // ============================================================================
+        // ====================================================================
 
         // --- Method calls ---
         System.out.println("\n=== METHODS ===");
@@ -425,9 +427,9 @@ public class PracticeJava {
             System.out.println("The person is of legal age");
         }
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 12: ARRAYS
-        // ============================================================================
+        // ====================================================================
 
         // --- Arrays ---
         System.out.println("\n=== ARRAYS ===");
@@ -472,9 +474,9 @@ public class PracticeJava {
         newNumbers[1] = 200;
         System.out.println("\nFirst element of new array: " + newNumbers[0]);
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 13: ARRAYLIST
-        // ============================================================================
+        // ====================================================================
 
         // --- ArrayList ---
         System.out.println("\n=== ARRAYLIST ===");
@@ -533,9 +535,9 @@ public class PracticeJava {
         System.out.println("\nEmpty ArrayList: " + nums);
         System.out.println("Is empty? " + nums.isEmpty());
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 14: HASHMAP
-        // ============================================================================
+        // ====================================================================
 
         // --- HashMap ---
         System.out.println("\n=== HASHMAP ===");
@@ -600,9 +602,9 @@ public class PracticeJava {
 
         System.out.println("\nCapital of Mexico: " + capitals.get("Mexico"));
 
-        // ============================================================================
+        // ====================================================================
         // SECTION 15: EXCEPTION HANDLING
-        // ============================================================================
+        // ====================================================================
 
         // --- Exception handling ---
         System.out.println("\n=== EXCEPTION HANDLING ===");
@@ -680,7 +682,7 @@ public class PracticeJava {
 //   2.  Constants with final keyword
 //   3.  Number operations (arithmetic, integer division, modulo)
 //   4.  String formatting (concatenation, String.format, printf)
-//   5.  Conditionals if/else/if-else (HTTP status codes, logical operators)
+//   5.  Conditionals if/else/if-else and logical operators
 //   6.  Switch statement (with int and String)
 //   7.  For loop (basic, range, step, descending)
 //   8.  While loop (counter, validation simulation)
