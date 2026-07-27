@@ -13,7 +13,7 @@ public final class AuthenticatedBrowser {
 
     public static WebDriver create(boolean mobile) {
         ChromeOptions options = new ChromeOptions();
-        options.setPageLoadStrategy(PageLoadStrategy.NONE);
+        options.setPageLoadStrategy(PageLoadStrategy.EAGER);
         options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
         if (mobile) {
             options.setExperimentalOption("mobileEmulation", Map.of(
