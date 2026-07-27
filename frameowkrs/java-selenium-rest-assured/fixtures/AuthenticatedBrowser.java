@@ -3,6 +3,7 @@ package fixtures;
 import config.Environment;
 import java.util.Map;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -12,6 +13,7 @@ public final class AuthenticatedBrowser {
 
     public static WebDriver create(boolean mobile) {
         ChromeOptions options = new ChromeOptions();
+        options.setPageLoadStrategy(PageLoadStrategy.NONE);
         options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
         if (mobile) {
             options.setExperimentalOption("mobileEmulation", Map.of(

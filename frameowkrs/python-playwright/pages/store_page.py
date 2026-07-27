@@ -8,7 +8,7 @@ class StorePage:
         self.page = page
 
     def open_product(self, product_id: int, product_name: str) -> None:
-        self.page.goto("/store")
+        self.page.goto("/store", wait_until="commit")
         self.page.get_by_test_id("store-search").fill(product_name)
         expect(self.page.get_by_test_id(f"product-add-to-cart-{product_id}")).to_be_visible()
 

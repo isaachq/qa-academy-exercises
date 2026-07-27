@@ -5,7 +5,7 @@ export class PlaygroundPage {
 
   async openWithSeed(seed: number): Promise<void> {
     await this.page.addInitScript((value) => localStorage.setItem('flaky_seed', String(value)), seed);
-    await this.page.goto('/playground');
+    await this.page.goto('/playground', { waitUntil: 'commit' });
     await expect(this.page.getByTestId('flaky-seed-display')).toContainText(String(seed));
   }
 

@@ -4,7 +4,7 @@ export class StorePage {
   constructor(private readonly page: Page) {}
 
   async openProduct(productId: number, productName: string): Promise<void> {
-    await this.page.goto('/store');
+    await this.page.goto('/store', { waitUntil: 'commit' });
     await this.page.getByTestId('store-search').fill(productName);
     await expect(this.page.getByTestId(`product-add-to-cart-${productId}`)).toBeVisible();
   }

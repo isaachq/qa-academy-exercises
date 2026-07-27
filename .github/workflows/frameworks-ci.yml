@@ -126,7 +126,6 @@ jobs:
           - typescript-playwright
           - python-playwright
           - java-selenium-rest-assured
-          - typescript-cypress
     env:
       BASE_URL: https://qaacademyabc.xyz
       API_KEY: ${{ secrets.QA_ACADEMY_API_KEY }}
@@ -139,12 +138,9 @@ jobs:
           test -n "$API_KEY"
           test -n "$UI_EMAIL"
       - name: Setup Node
-        if: startsWith(matrix.framework, 'typescript-')
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: frameowkrs/${{ matrix.framework }}/package-lock.json
       - name: Run TypeScript Playwright scenarios
         if: matrix.framework == 'typescript-playwright'
         working-directory: frameowkrs/typescript-playwright
@@ -152,13 +148,6 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
           npm test
-      - name: Run TypeScript Cypress scenarios
-        if: matrix.framework == 'typescript-cypress'
-        working-directory: frameowkrs/typescript-cypress
-        run: |
-          npm ci
-          npm test
-          npm run test:mobile
       - name: Setup Python
         if: matrix.framework == 'python-playwright'
         uses: actions/setup-python@v5
@@ -184,7 +173,19 @@ jobs:
         if: matrix.framework == 'java-selenium-rest-assured'
         working-directory: frameowkrs/java-selenium-rest-assured
         run: mvn --batch-mode test
-      - name: Upload Allure results
+      - name: Generate Allure report
+        if: always()
+        working-directory: frameowkrs/${{ matrix.framework }}
+        run: |
+          RESULTS_DIR="allure-results"
+          if [ "${{ matrix.framework }}" = "java-selenium-rest-assured" ]; then
+            RESULTS_DIR="target/allure-results"
+          fi
+          if [ -d "$RESULTS_DIR" ]; then
+            npx --yes allure-commandline@2.35.1 generate "$RESULTS_DIR" --clean -o allure-report
+          fi
+      - name: Upload Allure raw results
+        id: upload-raw
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -193,3 +194,19 @@ jobs:
             frameowkrs/${{ matrix.framework }}/allure-results
             frameowkrs/${{ matrix.framework }}/target/allure-results
           if-no-files-found: warn
+      - name: Upload Allure HTML report
+        id: upload-html
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-${{ matrix.framework }}
+          path: frameowkrs/${{ matrix.framework }}/allure-report
+          if-no-files-found: warn
+      - name: Publish run summary
+        if: always()
+        run: |
+          echo "## ${{ matrix.framework }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Result: **${{ job.status }}**" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [Download Allure HTML report](${{ steps.upload-html.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [Download raw Allure evidence](${{ steps.upload-raw.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"

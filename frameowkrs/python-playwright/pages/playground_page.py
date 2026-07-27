@@ -11,7 +11,7 @@ class PlaygroundPage:
         self.page.add_init_script(
             f"localStorage.setItem('flaky_seed', {json.dumps(str(seed))})"
         )
-        self.page.goto("/playground")
+        self.page.goto("/playground", wait_until="commit")
         expect(self.page.get_by_test_id("flaky-seed-display")).to_contain_text(str(seed))
 
     def run_fast_success(self) -> None:

@@ -6,7 +6,7 @@ class CartPage:
         self.page = page
 
     def open_and_verify(self, product_name: str, quantity: int, unit_price: float) -> None:
-        self.page.goto("/cart")
+        self.page.goto("/cart", wait_until="commit")
         items = self.page.get_by_test_id("cart-items")
         expect(items).to_contain_text(product_name)
         expect(items).to_contain_text(str(quantity))

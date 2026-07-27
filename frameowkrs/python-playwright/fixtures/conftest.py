@@ -10,7 +10,12 @@ from services.product_service import ProductService
 def authenticated_context(
     browser: Browser, playwright: Playwright, device_name: str | None = None
 ) -> BrowserContext:
-    options = playwright.devices[device_name] if device_name else {"viewport": {"width": 1440, "height": 900}}
+    options = (
+        dict(playwright.devices[device_name])
+        if device_name
+        else {"viewport": {"width": 1440, "height": 900}}
+    )
+    options["base_url"] = environment.base_url
     context = browser.new_context(**options)
     context.add_init_script(
         f"""

@@ -22,15 +22,30 @@ export class ProductService {
     return { Authorization: `Bearer ${environment.apiKey}` };
   }
 
+  private async redactRequestFailure<T>(
+    operation: string,
+    request: () => Promise<T>,
+  ): Promise<T> {
+    try {
+      return await request();
+    } catch {
+      throw new Error(`${operation} failed; credentials were redacted`);
+    }
+  }
+
   async clearCart(): Promise<void> {
-    await this.request.delete('/api/cart', { headers: this.headers() });
+    await this.redactRequestFailure('Clear cart', () =>
+      this.request.delete('/api/cart', { headers: this.headers() }),
+    );
   }
 
   async createProduct(input: ProductInput): Promise<Product> {
-    const response = await this.request.post('/api/products', {
-      headers: this.headers(),
-      data: input,
-    });
+    const response = await this.redactRequestFailure('Create product', () =>
+      this.request.post('/api/products', {
+        headers: this.headers(),
+        data: input,
+      }),
+    );
     await this.attachExchange('Create product', input, response.status());
     expect(response.status()).toBe(201);
     const payload = await response.json();
@@ -38,31 +53,39 @@ export class ProductService {
   }
 
   async getProduct(id: number): Promise<Product> {
-    const response = await this.request.get(`/api/products/${id}`, { headers: this.headers() });
+    const response = await this.redactRequestFailure('Get product', () =>
+      this.request.get(`/api/products/${id}`, { headers: this.headers() }),
+    );
     expect(response.ok()).toBeTruthy();
     const payload = await response.json();
     return payload.data as Product;
   }
 
   async updateProduct(id: number, input: Partial<ProductInput>): Promise<Product> {
-    const response = await this.request.patch(`/api/products/${id}`, {
-      headers: this.headers(),
-      data: input,
-    });
+    const response = await this.redactRequestFailure('Update product', () =>
+      this.request.patch(`/api/products/${id}`, {
+        headers: this.headers(),
+        data: input,
+      }),
+    );
     expect(response.ok()).toBeTruthy();
     const payload = await response.json();
     return payload.data as Product;
   }
 
   async deleteOrder(id: number): Promise<void> {
-    const response = await this.request.delete(`/api/orders/${id}`, { headers: this.headers() });
+    const response = await this.redactRequestFailure('Delete order', () =>
+      this.request.delete(`/api/orders/${id}`, { headers: this.headers() }),
+    );
     expect([200, 404]).toContain(response.status());
   }
 
   async deleteProduct(id: number): Promise<void> {
-    const response = await this.request.delete(`/api/products/${id}?force=true`, {
-      headers: this.headers(),
-    });
+    const response = await this.redactRequestFailure('Delete product', () =>
+      this.request.delete(`/api/products/${id}?force=true`, {
+        headers: this.headers(),
+      }),
+    );
     expect([200, 404]).toContain(response.status());
   }
 

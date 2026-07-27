@@ -4,7 +4,7 @@ export class CartPage {
   constructor(private readonly page: Page) {}
 
   async openAndVerify(productName: string, quantity: number, unitPrice: number): Promise<void> {
-    await this.page.goto('/cart');
+    await this.page.goto('/cart', { waitUntil: 'commit' });
     const item = this.page.getByTestId('cart-items').filter({ hasText: productName });
     await expect(item).toBeVisible();
     await expect(item).toContainText(String(quantity));

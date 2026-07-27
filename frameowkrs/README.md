@@ -31,3 +31,16 @@ Every project implements the same three teaching scenarios:
 All framework code, documentation, logs, test titles and Allure evidence are written in English.
 Accounts are created manually. Copy each `.env.example` to `.env` and provide the existing account
 values before running live tests.
+
+## GitHub Actions live execution
+
+The pull request workflow always compiles and collects all four projects. The three main frameworks
+run their real UI and API scenarios from the **Frameworks CI** manual workflow:
+
+1. Add `QA_ACADEMY_API_KEY` and `QA_ACADEMY_UI_EMAIL` as repository Actions secrets.
+2. Open **Actions → Frameworks CI → Run workflow**.
+3. Select the framework branch and start the run.
+4. Open the run summary to download the generated Allure HTML report or its raw results.
+
+The main frameworks execute sequentially so they cannot compete for the same cart, stock or orders.
+The Cypress project remains a compiled and type-checked comparison demo.
