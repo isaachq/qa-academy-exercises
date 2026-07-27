@@ -11,6 +11,12 @@
 
 - Un ID representa la misma intención en todos los frameworks principales.
 - El código puede cambiar por lenguaje; precondiciones, assertions y cleanup no.
+- Los documentos de planeación pueden estar en español; todo el contenido de los frameworks debe
+  escribirse en inglés.
+- Esto incluye carpetas, archivos, clases, métodos, variables, fixtures, test names, descriptions,
+  comments, logs, technical messages, Allure labels/steps, README files, documented commands and
+  fictional test data.
+- No se aceptarán implementaciones bilingües ni traducciones parciales entre frameworks.
 - Cada caso nuevo debe tener comando local y ejecución real en CI.
 - Los casos mutables generan datos únicos y ejecutan cleanup aun si falla la prueba.
 - Registro, Turnstile interno, examen, evaluación, certificación, proctoring, administración, MCP y
