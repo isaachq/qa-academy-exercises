@@ -10,9 +10,12 @@ public final class PlaygroundPage extends BasePage {
 
     public void openWithSeed(long seed) {
         Steps.step(Steps.Actions.PLAYGROUND_OPEN, () -> {
+            // Navigate to the domain first to establish context for localStorage
+            driver.get(Environment.BASE_URL + "/playground");
             ((JavascriptExecutor) driver).executeScript(
                     "localStorage.setItem('flaky_seed', arguments[0]);", String.valueOf(seed));
-            driver.get(Environment.BASE_URL + "/playground");
+            // Reload the page to apply the seed
+            driver.navigate().refresh();
         });
     }
 
