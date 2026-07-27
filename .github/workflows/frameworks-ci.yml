@@ -163,8 +163,12 @@ jobs:
           npm ci
           export NODE_PATH="$PWD/node_modules"
           node -e "console.log(require.resolve('@babel/preset-typescript'))"
-          npm run test:desktop
-          npm run test:mobile
+          rm -rf allure-results allure-results-desktop allure-results-mobile
+          ALLURE_RESULTS_DIR=allure-results-desktop npm run test:desktop
+          ALLURE_RESULTS_DIR=allure-results-mobile npm run test:mobile
+          mkdir allure-results
+          cp -a allure-results-desktop/. allure-results/
+          cp -a allure-results-mobile/. allure-results/
       - name: Setup Python
         if: matrix.framework == 'python-playwright'
         uses: actions/setup-python@v5
