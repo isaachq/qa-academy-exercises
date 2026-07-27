@@ -40,18 +40,33 @@ export class StorePage {
   }
 
   assertMobileModalContract(): void {
-    cy.get('[data-testid="order-history-modal"]').then(($modal) => {
-      const rect = $modal[0].getBoundingClientRect();
-      const backdrop = $modal[0].parentElement;
-      expect(rect.left).to.be.at.least(0);
-      expect(rect.right).to.be.at.most(Cypress.config('viewportWidth'));
-      expect(rect.top).to.be.at.least(0);
-      expect(rect.height).to.be.at.most(Cypress.config('viewportHeight'));
-      expect(getComputedStyle($modal[0]).overflowY).to.eq('auto');
-      if (!backdrop) throw new Error('Order history backdrop was not found');
-      expect(getComputedStyle(backdrop).position).to.eq('fixed');
-      expect(backdrop.contains(document.elementFromPoint(1, 1))).to.eq(true);
-    });
+    cy.get('[data-testid="order-history-modal"]')
+      .then(($modal) => {
+        const modal = $modal[0];
+        const rect = modal.getBoundingClientRect();
+        const backdrop = modal.parentElement;
+        if (!backdrop) throw new Error('Order history backdrop was not found');
+        const viewportCorner = document.elementFromPoint(1, 1);
+
+        return {
+          left: rect.left,
+          right: rect.right,
+          top: rect.top,
+          height: rect.height,
+          overflowY: getComputedStyle(modal).overflowY,
+          backdropPosition: getComputedStyle(backdrop).position,
+          backdropCoversViewportCorner: Boolean(viewportCorner && backdrop.contains(viewportCorner)),
+        };
+      })
+      .then((contract) => {
+        expect(contract.left).to.be.at.least(0);
+        expect(contract.right).to.be.at.most(Cypress.config('viewportWidth'));
+        expect(contract.top).to.be.at.least(0);
+        expect(contract.height).to.be.at.most(Cypress.config('viewportHeight'));
+        expect(contract.overflowY).to.eq('auto');
+        expect(contract.backdropPosition).to.eq('fixed');
+        expect(contract.backdropCoversViewportCorner).to.eq(true);
+      });
     cy.get('[data-testid="order-history-close"]').should('be.visible').click();
     cy.get('[data-testid="order-history-modal"]').should('not.exist');
   }
