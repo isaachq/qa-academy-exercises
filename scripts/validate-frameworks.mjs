@@ -17,7 +17,7 @@ const scenarios = [
 
 const failures = [];
 for (const project of projects) {
-  const base = join(root, 'frameowkrs', project);
+  const base = join(root, 'frameworks', project);
   for (const layer of layers) {
     if (!existsSync(join(base, layer))) failures.push(`${project}: missing ${layer}`);
   }
