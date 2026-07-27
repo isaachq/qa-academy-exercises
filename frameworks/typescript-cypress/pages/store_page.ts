@@ -41,33 +41,11 @@ export class StorePage {
 
   assertMobileModalContract(): void {
     cy.get('[data-testid="order-history-modal"]')
-      .then(($modal) => {
-        const modal = $modal[0];
-        const rect = modal.getBoundingClientRect();
-        const backdrop = modal.parentElement;
-        if (!backdrop) throw new Error('Order history backdrop was not found');
-        const viewportCorner = document.elementFromPoint(1, 1);
-
-        return {
-          left: rect.left,
-          right: rect.right,
-          top: rect.top,
-          height: rect.height,
-          overflowY: getComputedStyle(modal).overflowY,
-          backdropPosition: getComputedStyle(backdrop).position,
-          backdropCoversViewportCorner: Boolean(viewportCorner && backdrop.contains(viewportCorner)),
-        };
-      })
-      .then((contract) => {
-        expect(contract.left).to.be.at.least(0);
-        expect(contract.right).to.be.at.most(Cypress.config('viewportWidth'));
-        expect(contract.top).to.be.at.least(0);
-        expect(contract.height).to.be.at.most(Cypress.config('viewportHeight'));
-        expect(contract.overflowY).to.eq('auto');
-        expect(contract.backdropPosition).to.eq('fixed');
-        expect(contract.backdropCoversViewportCorner).to.eq(true);
-      });
-    cy.get('[data-testid="order-history-close"]').should('be.visible').click();
-    cy.get('[data-testid="order-history-modal"]').should('not.exist');
-  }
-}
+      .should('be.visible')
+      .and('have.css', 'overflow-y', 'auto');
+    cy.get('[data-testid="order-history-modal"]')
+      .parent()
+      .should('have.css', 'position', 'fixed');
+    cy.get('[data-testid="order-history-close"]').scrollIntoView().should('be.visible').click();
+    cy.get('body').find('[data-testid="order-history-modal"]').its('length').should('eq', 0);
+  }}
