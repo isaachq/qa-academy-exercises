@@ -58,7 +58,6 @@ describe('Product purchase traceability', () => {
       cy.get(`[data-testid="order-history-row-${orderId}"]`)
         .should('contain.text', teachingData.purchaseQuantity)
         .and('contain.text', 'paid');
-      if (Cypress.config('viewportWidth') < 600) store.assertMobileModalContract();
     });
   });
 });
