@@ -1,0 +1,195 @@
+name: Frameworks CI
+
+on:
+  pull_request:
+    paths:
+      - "frameowkrs/**"
+      - "scripts/validate-frameworks.mjs"
+      - ".github/workflows/frameworks-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "frameowkrs/**"
+      - "scripts/validate-frameworks.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  structure:
+    name: Validate shared framework structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate framework contracts
+        run: npm run validate:frameworks
+
+  typescript-playwright:
+    name: TypeScript Playwright checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frameowkrs/typescript-playwright
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frameowkrs/typescript-playwright/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Type-check
+        run: npm run typecheck
+      - name: Collect tests
+        run: npm run test:list
+
+  typescript-cypress:
+    name: TypeScript Cypress checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frameowkrs/typescript-cypress
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frameowkrs/typescript-cypress/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Type-check
+        run: npm run typecheck
+      - name: Verify Cypress
+        run: npm run verify
+
+  python:
+    name: Python Playwright checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frameowkrs/python-playwright
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: frameowkrs/python-playwright/requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall .
+      - name: Collect tests
+        run: pytest --collect-only
+
+  java:
+    name: Java Selenium and REST Assured checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frameowkrs/java-selenium-rest-assured
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Compile tests
+        run: mvn --batch-mode test-compile
+
+  live-frameworks:
+    name: Live ${{ matrix.framework }}
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        framework:
+          - typescript-playwright
+          - python-playwright
+          - java-selenium-rest-assured
+          - typescript-cypress
+    env:
+      BASE_URL: https://qaacademyabc.xyz
+      API_KEY: ${{ secrets.QA_ACADEMY_API_KEY }}
+      UI_EMAIL: ${{ secrets.QA_ACADEMY_UI_EMAIL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Require live credentials
+        run: |
+          test -n "$API_KEY"
+          test -n "$UI_EMAIL"
+      - name: Setup Node
+        if: startsWith(matrix.framework, 'typescript-')
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frameowkrs/${{ matrix.framework }}/package-lock.json
+      - name: Run TypeScript Playwright scenarios
+        if: matrix.framework == 'typescript-playwright'
+        working-directory: frameowkrs/typescript-playwright
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm test
+      - name: Run TypeScript Cypress scenarios
+        if: matrix.framework == 'typescript-cypress'
+        working-directory: frameowkrs/typescript-cypress
+        run: |
+          npm ci
+          npm test
+          npm run test:mobile
+      - name: Setup Python
+        if: matrix.framework == 'python-playwright'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: frameowkrs/python-playwright/requirements.txt
+      - name: Run Python Playwright scenarios
+        if: matrix.framework == 'python-playwright'
+        working-directory: frameowkrs/python-playwright
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+          pytest
+      - name: Setup Java
+        if: matrix.framework == 'java-selenium-rest-assured'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Run Java scenarios
+        if: matrix.framework == 'java-selenium-rest-assured'
+        working-directory: frameowkrs/java-selenium-rest-assured
+        run: mvn --batch-mode test
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.framework }}
+          path: |
+            frameowkrs/${{ matrix.framework }}/allure-results
+            frameowkrs/${{ matrix.framework }}/target/allure-results
+          if-no-files-found: warn

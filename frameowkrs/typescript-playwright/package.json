@@ -1,0 +1,23 @@
+{
+  "name": "qa-academy-typescript-playwright",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:desktop": "DEVICE_PROFILE=desktop playwright test",
+    "test:mobile": "DEVICE_PROFILE=mobile playwright test tests/ui/product_purchase_traceability.spec.ts",
+    "test:list": "playwright test --list",
+    "typecheck": "tsc --noEmit",
+    "report": "allure generate allure-results --clean -o allure-report",
+    "report:open": "allure open allure-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.0",
+    "@types/node": "^24.0.0",
+    "allure-commandline": "^2.35.1",
+    "allure-playwright": "3.10.2",
+    "dotenv": "17.4.2",
+    "typescript": "7.0.2"
+  }
+}

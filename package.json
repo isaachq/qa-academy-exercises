@@ -1,0 +1,7 @@
+{
+  "name": "qa-academy-exercises",
+  "private": true,
+  "scripts": {
+    "validate:frameworks": "node scripts/validate-frameworks.mjs"
+  }
+}
