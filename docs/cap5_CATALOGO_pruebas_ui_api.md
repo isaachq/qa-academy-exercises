@@ -28,12 +28,19 @@ El catálogo completo pertenece al repositorio, no a las páginas de Word. El ca
 
 Cada uno de los tres frameworks principales mostrará tres pruebas completas:
 
-1. **UI estándar — Store → carrito (`BOOK-UI-CART-001`)**
+1. **UI estándar — trazabilidad de compra del producto (`BOOK-UI-TRACE-001`)**
    - preparar sesión mediante fixture;
-   - buscar un producto;
-   - agregarlo al carrito;
+   - buscar un producto y guardar su stock inicial;
+   - abrir el tracker y comprobar stock, unidades apartadas y unidades disponibles;
+   - agregar una cantidad conocida al carrito;
    - comprobar item, cantidad y subtotal;
-   - utilizar Page Objects.
+   - volver al tracker y demostrar que `reserved` aumenta y `available` disminuye;
+   - completar el checkout y conservar el ID de la orden;
+   - regresar al producto y verificar que el carrito ya no reserva unidades;
+   - abrir **Order History** y encontrar la orden recién creada;
+   - comprobar orden, fecha, cliente, cantidad, precio unitario, total de línea, estado y pago;
+   - validar que el stock final corresponde a las unidades compradas;
+   - utilizar Page Objects y cleanup.
 2. **UI avanzada — flaky test reproducible (`BOOK-UI-FLAKY-001`)**
    - abrir el formulario de flakiness de Playground;
    - fijar una seed conocida;
@@ -49,7 +56,7 @@ Cada uno de los tres frameworks principales mostrará tres pruebas completas:
 
 Esto produce **nueve archivos de prueba completos en el libro**:
 
-| Framework | UI carrito | UI flaky | API CRUD |
+| Framework | UI trazabilidad | UI flaky | API CRUD |
 |---|---|---|---|
 | Python | Completo | Completo | Completo |
 | TypeScript | Completo | Completo | Completo |
@@ -58,12 +65,54 @@ Esto produce **nueve archivos de prueba completos en el libro**:
 Los nombres de archivo conservarán el mismo significado:
 
 ```text
-tests/ui/test_store_cart.*
+tests/ui/test_product_purchase_traceability.*
 tests/ui/test_playground_flaky.*
 tests/api/test_product_crud.*
 ```
 
 Cada lenguaje adaptará únicamente su extensión y convención de naming.
+
+### Assertions del flujo de trazabilidad
+
+Con una cantidad de compra `q`, el mismo test demostrará:
+
+| Momento | Stock | Apartados | Disponibles |
+|---|---:|---:|---:|
+| Antes del carrito | `S` | `R` | `S - R` |
+| Después de agregar | `S` | `R + q` | `S - (R + q)` |
+| Después del checkout | `S - q` | `R` | `(S - q) - R` |
+
+Para evitar contaminación, el fixture dejará el carrito vacío al inicio; en la ejecución editorial
+normal `R = 0`. El historial debe contener el ID de la orden creada y la misma cantidad `q`. La
+prueba no buscará la fila por posición visual.
+
+El tracker se automatizará mediante los contratos públicos:
+
+- `product-stock-info-${product.id}`;
+- `stock-info-modal`;
+- `stock-info-close`;
+- `product-order-history-${product.id}`;
+- `order-history-modal`;
+- `order-history-row-${order.id}`;
+- `order-history-close`.
+
+### Ejecución desktop y mobile
+
+`BOOK-UI-TRACE-001` se ejecutará completo en dos perfiles:
+
+- desktop Chromium;
+- mobile web emulado.
+
+No se creará una copia del test. Playwright usará proyectos/dispositivos, Selenium ejecutará la
+misma clase con Chrome `mobileEmulation`, y Cypress reutilizará el mismo spec con su viewport móvil.
+
+La versión móvil comprobará además:
+
+- tracker e historial pintados por encima del header y la navegación;
+- botón de cierre visible, alcanzable y sin clipping;
+- panel contenido dentro del viewport;
+- historial largo con scroll interno;
+- página detrás del backdrop sin recibir interacción.
 
 ### Configuración y reportes incluidos
 
@@ -81,7 +130,8 @@ Después de ejecutar las tres pruebas, se mostrará el reporte Allure con:
 
 - epic, feature y story equivalentes;
 - pasos de setup, test y teardown;
-- screenshot del fallo UI;
+- screenshots del tracker antes/después, historial y fallo UI;
+- ID de la orden y comparación stock/apartados/disponibles;
 - request/response redactados del CRUD;
 - seed y evidencia del flaky test;
 - resultado de cleanup.
@@ -89,7 +139,7 @@ Después de ejecutar las tres pruebas, se mostrará el reporte Allure con:
 ### Cypress en el libro
 
 Cypress tendrá la misma estructura y las mismas tres pruebas en el repositorio. En Word se mostrará
-una comparación compacta de carrito, flaky test y CRUD, resaltando únicamente las diferencias de
+una comparación compacta de trazabilidad, flaky test y CRUD, resaltando únicamente las diferencias de
 sintaxis, runner y reporte. No se repetirán tres archivos completos adicionales.
 
 ### Técnicas mostradas como fragmentos
@@ -111,6 +161,7 @@ dirigirá al lector a la implementación completa en `qa-academy-exercises`.
 - 9 archivos de prueba completos.
 - Configuración y reporte de los tres frameworks principales.
 - Cypress como comparación breve de las mismas tres pruebas.
+- El flujo completo de trazabilidad ejecutado en desktop y mobile sin duplicar el test.
 - Fragmentos avanzados seleccionados.
 - Ninguna impresión del catálogo completo.
 
