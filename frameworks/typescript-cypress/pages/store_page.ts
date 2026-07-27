@@ -40,12 +40,14 @@ export class StorePage {
   }
 
   assertMobileModalContract(): void {
+    cy.get('[data-testid="order-history-modal"]').should('be.visible');
     cy.get('[data-testid="order-history-modal"]')
-      .should('be.visible')
-      .and('have.css', 'overflow-y', 'auto');
+      .invoke('css', 'overflow-y')
+      .should('eq', 'auto');
     cy.get('[data-testid="order-history-modal"]')
       .parent()
-      .should('have.css', 'position', 'fixed');
+      .invoke('css', 'position')
+      .should('eq', 'fixed');
     cy.get('[data-testid="order-history-close"]').scrollIntoView().should('be.visible').click();
     cy.get('body').find('[data-testid="order-history-modal"]').its('length').should('eq', 0);
   }
