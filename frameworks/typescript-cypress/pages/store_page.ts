@@ -20,8 +20,7 @@ export class StorePage {
         reserved: read('Reserved in Your Cart'),
         available: read('Available to Add'),
       };
-      cy.get('[data-testid="stock-info-close"]').click();
-      return inventory;
+      return cy.get('[data-testid="stock-info-close"]').click().then(() => inventory);
     });
   }
 
