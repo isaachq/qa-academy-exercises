@@ -453,6 +453,14 @@ publicarlos.
 ## 13. Política de código y publicación
 
 - El libro explica; el repositorio completa.
+- Los documentos internos de planeación pueden permanecer en español, pero los cuatro frameworks
+  deben estar escritos completamente en inglés.
+- Deben usar inglés los nombres de carpetas y archivos, clases, métodos, variables, fixtures, tests,
+  títulos, descripciones, comentarios, logs, mensajes técnicos, pasos y labels de Allure, README,
+  comandos documentados y datos ficticios de ejemplo.
+- No se permitirá mezclar código en inglés con nombres, comentarios o evidencia en español.
+- El texto visible de QA Academy no se utilizará como selector; los tests usarán el contrato estable
+  de `data-testid`, roles o atributos técnicos.
 - El libro mostrará completos dos tests UI y un test API REST por framework principal.
 - UI estándar: producto → tracker → carrito → checkout → historial y trazabilidad.
 - UI avanzada: Playground flaky test con seed reproducible, diagnóstico y evidencia sin retry ciego.
