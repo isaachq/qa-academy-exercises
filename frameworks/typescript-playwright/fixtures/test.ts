@@ -23,8 +23,8 @@ export const test = base.extend<Fixtures>({
   productService: async ({ request }, use, testInfo) => {
     await use(new ProductService(request, testInfo));
   },
-  orderService: async ({ request, productService }, use) => {
-    await use(new OrderService(request, productService));
+  orderService: async ({ request, productService }, use, testInfo) => {
+    await use(new OrderService(request, productService, testInfo));
   },
 });
 

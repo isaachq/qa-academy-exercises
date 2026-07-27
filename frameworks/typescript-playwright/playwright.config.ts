@@ -2,10 +2,15 @@ import 'dotenv/config';
 import { defineConfig, devices } from '@playwright/test';
 import { environment } from './config/environment.js';
 
-const selectedProfile = process.env.DEVICE_PROFILE ?? 'all';
 const projects = [
   {
+    name: 'api',
+    testMatch: /api\/.*\.spec\.ts/,
+    use: {},
+  },
+  {
     name: 'desktop-chromium',
+    testMatch: /ui\/.*\.spec\.ts/,
     use: { ...devices['Desktop Chrome'] },
   },
   {
@@ -13,7 +18,7 @@ const projects = [
     testMatch: /product_purchase_traceability\.spec\.ts/,
     use: { ...devices['Pixel 7'] },
   },
-].filter((project) => selectedProfile === 'all' || project.name.startsWith(selectedProfile));
+];
 
 export default defineConfig({
   testDir: './tests',

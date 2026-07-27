@@ -34,13 +34,13 @@ async function createCartProduct(
   return product;
 }
 
-test('[UI-CART-001] Agregar producto actualiza carrito y badge', async ({ page, productService }) => {
+test('[UI-CART-001] Adding a product updates the cart and badge', async ({ page, productService }) => {
   await labels('Cart UI', 'UI-CART-001 - Add product');
   let product: Product | undefined;
   try {
-    product = await step('Given: existe un producto controlado y el carrito está vacío', () =>
+    product = await step('Given: a controlled product exists and the cart is empty', () =>
       createCartProduct(page, productService, 'ui-cart-add'));
-    await step('Then: el badge y el carrito muestran la misma unidad', async () => {
+    await step('Then: the badge and cart show the same unit', async () => {
       await expect(page.getByTestId('header-cart-count')).toHaveText('1');
       await page.goto('/cart');
       const item = page.getByTestId(/^cart-item-\d+$/).filter({ hasText: product!.name });
@@ -53,7 +53,7 @@ test('[UI-CART-001] Agregar producto actualiza carrito y badge', async ({ page, 
   }
 });
 
-test('[UI-CART-002] Cambiar cantidad recalcula el subtotal', async ({ page, productService }) => {
+test('[UI-CART-002] Changing quantity recalculates the subtotal', async ({ page, productService }) => {
   await labels('Cart UI', 'UI-CART-002 - Change quantity');
   let product: Product | undefined;
   try {
@@ -61,9 +61,9 @@ test('[UI-CART-002] Cambiar cantidad recalcula el subtotal', async ({ page, prod
     await page.goto('/cart');
     const item = page.getByTestId(/^cart-item-\d+$/).filter({ hasText: product.name });
     const id = (await item.getAttribute('data-testid'))!.replace('cart-item-', '');
-    await step('When: se incrementa la cantidad del item persistente', () =>
+    await step('When: user increases the persistent item quantity', () =>
       page.getByTestId(`cart-increase-${id}`).click());
-    await step('Then: cantidad y subtotal se recalculan', async () => {
+    await step('Then: quantity and subtotal are recalculated', async () => {
       await expect(page.getByTestId(`cart-quantity-${id}`)).toHaveText('2');
       await expect(page.getByTestId('cart-subtotal')).toContainText((product!.price * 2).toFixed(2));
     });
@@ -73,7 +73,7 @@ test('[UI-CART-002] Cambiar cantidad recalcula el subtotal', async ({ page, prod
   }
 });
 
-test('[UI-CART-003] Eliminar usa diálogo nativo y quita el item confirmado', async ({ page, productService }) => {
+test('[UI-CART-003] Removing an item uses a native dialog and deletes the confirmed item', async ({ page, productService }) => {
   await labels('Cart UI', 'UI-CART-003 - Native delete dialog');
   let product: Product | undefined;
   try {
@@ -84,7 +84,7 @@ test('[UI-CART-003] Eliminar usa diálogo nativo y quita el item confirmado', as
     const dialog = page.waitForEvent('dialog');
     await page.getByTestId(`cart-remove-${id}`).click();
     const confirmation = await dialog;
-    await step('Then: el diálogo contiene el contrato esperado y se acepta', async () => {
+    await step('Then: the dialog contains the expected contract and is accepted', async () => {
       expect(confirmation.type()).toBe('confirm');
       expect(confirmation.message()).toContain('Remove this item from cart?');
       await confirmation.accept();
@@ -96,18 +96,18 @@ test('[UI-CART-003] Eliminar usa diálogo nativo y quita el item confirmado', as
   }
 });
 
-test('[UI-CART-004] Vaciar carrito confirma y presenta estado vacío', async ({ page, productService }) => {
+test('[UI-CART-004] Clearing the cart confirms and displays the empty state', async ({ page, productService }) => {
   await labels('Cart UI', 'UI-CART-004 - Clear cart');
   let product: Product | undefined;
   try {
     product = await createCartProduct(page, productService, 'ui-cart-clear');
     await page.goto('/cart');
     const dialog = page.waitForEvent('dialog');
-    await step('When: se solicita vaciar el carrito', () => page.getByTestId('cart-clear').click());
+    await step('When: user requests to clear the cart', () => page.getByTestId('cart-clear').click());
     const confirmation = await dialog;
     expect(confirmation.message()).toContain('Clear entire cart?');
     await confirmation.accept();
-    await step('Then: se presenta el estado vacío y desaparece el badge', async () => {
+    await step('Then: the empty state appears and the badge disappears', async () => {
       await expect(page.getByTestId('cart-empty-state')).toBeVisible();
       await expect(page.getByTestId('header-cart-count')).toHaveCount(0);
     });
@@ -117,13 +117,13 @@ test('[UI-CART-004] Vaciar carrito confirma y presenta estado vacío', async ({ 
   }
 });
 
-test('[UI-CHECKOUT-001] Checkout muestra todas las validaciones requeridas', async ({ page, productService }) => {
+test('[UI-CHECKOUT-001] Checkout displays all required validations', async ({ page, productService }) => {
   await labels('Checkout UI', 'UI-CHECKOUT-001 - Required validation');
   let product: Product | undefined;
   try {
     product = await createCartProduct(page, productService, 'ui-checkout-required');
     await page.goto('/checkout');
-    await step('Then: los campos vacíos exponen errores y bloquean el submit', async () => {
+    await step('Then: empty fields expose errors and disable submission', async () => {
       for (const key of ['fullname', 'email', 'address', 'city', 'state', 'zip', 'card', 'expiry', 'cvv']) {
         await expect(page.getByTestId(`checkout-${key}-error`)).toBeVisible();
       }
@@ -135,13 +135,13 @@ test('[UI-CHECKOUT-001] Checkout muestra todas las validaciones requeridas', asy
   }
 });
 
-test('[UI-CHECKOUT-002] Checkout rechaza límites y valores inválidos', async ({ page, productService }) => {
+test('[UI-CHECKOUT-002] Checkout rejects boundary and invalid values', async ({ page, productService }) => {
   await labels('Checkout UI', 'UI-CHECKOUT-002 - Boundaries and negatives');
   let product: Product | undefined;
   try {
     product = await createCartProduct(page, productService, 'ui-checkout-boundary');
     await page.goto('/checkout');
-    await step('When: se introducen caracteres, formatos y límites inválidos', async () => {
+    await step('When: user enters invalid characters, formats and boundaries', async () => {
       await page.getByTestId('checkout-fullname').fill('Invalid@Name');
       await page.getByTestId('checkout-email').fill('not-an-email');
       await page.getByTestId('checkout-zip').fill('-1');
@@ -149,7 +149,7 @@ test('[UI-CHECKOUT-002] Checkout rechaza límites y valores inválidos', async (
       await page.getByTestId('checkout-expiry').fill('1399');
       await page.getByTestId('checkout-cvv').fill('1');
     });
-    await step('Then: cada límite produce un error específico', async () => {
+    await step('Then: each boundary produces a specific error', async () => {
       await expect(page.getByTestId('checkout-fullname-error')).toContainText('only');
       await expect(page.getByTestId('checkout-email-error')).toContainText('invalid');
       await expect(page.getByTestId('checkout-zip-error')).toContainText('numeric');
@@ -163,16 +163,16 @@ test('[UI-CHECKOUT-002] Checkout rechaza límites y valores inválidos', async (
   }
 });
 
-test('[UI-CHECKOUT-003] Checkout crea orden y abre su detalle', async ({ page, productService }) => {
+test('[UI-CHECKOUT-003] Checkout creates an order and opens its details', async ({ page, productService }) => {
   await labels('Checkout UI', 'UI-CHECKOUT-003 - Create order');
   let product: Product | undefined;
   let orderId: number | undefined;
   try {
     product = await createCartProduct(page, productService, 'ui-checkout-order');
     await page.goto('/checkout');
-    orderId = await step('When: se completan datos de prueba y se envía la orden', () =>
+    orderId = await step('When: testing details are completed and the order is submitted', () =>
       new CheckoutPage(page).placeOrder());
-    await step('Then: el detalle presenta ID, total e item persistidos', async () => {
+    await step('Then: detail displays the persisted ID, total and item', async () => {
       await expect(page.getByTestId('order-detail-id')).toContainText(String(orderId));
       await expect(page.getByTestId('order-detail-items')).toContainText(product!.name);
       await expect(page.getByTestId('order-detail-total')).toBeVisible();
@@ -184,7 +184,7 @@ test('[UI-CHECKOUT-003] Checkout crea orden y abre su detalle', async ({ page, p
   }
 });
 
-test('[UI-CHECKOUT-004] Modal de impuestos permanece dentro del viewport responsive', async ({ page, productService }) => {
+test('[UI-CHECKOUT-004] Tax modal remains inside the responsive viewport', async ({ page, productService }) => {
   await labels('Checkout UI', 'UI-CHECKOUT-004 - Responsive modal');
   let product: Product | undefined;
   try {
@@ -207,7 +207,7 @@ test('[UI-CHECKOUT-004] Modal de impuestos permanece dentro del viewport respons
   }
 });
 
-test('[UI-ORDER-001] Abrir detalle muestra contenido y navegación completa', async ({ page, orderService }) => {
+test('[UI-ORDER-001] Opening details shows content and full-page navigation', async ({ page, orderService }) => {
   await labels('Orders UI', 'UI-ORDER-001 - Open detail');
   let controlled: ControlledOrder | undefined;
   try {
@@ -215,7 +215,7 @@ test('[UI-ORDER-001] Abrir detalle muestra contenido y navegación completa', as
     await page.goto('/orders');
     await page.getByTestId('orders-search').fill(String(controlled.order.id));
     await page.getByTestId(`order-view-${controlled.order.id}`).click();
-    await step('Then: el modal corresponde a la orden y abre la página completa', async () => {
+    await step('Then: the modal matches the order and opens the full page', async () => {
       await expect(page.getByTestId('order-modal')).toBeVisible();
       await expect(page.getByTestId('order-modal')).toContainText(String(controlled!.order.id));
       await page.getByTestId('order-modal-open-page').click();
@@ -227,17 +227,17 @@ test('[UI-ORDER-001] Abrir detalle muestra contenido y navegación completa', as
   }
 });
 
-test('[UI-ORDER-002] Historial busca y filtra una orden controlada', async ({ page, orderService }) => {
+test('[UI-ORDER-002] History searches and filters a controlled order', async ({ page, orderService }) => {
   await labels('Orders UI', 'UI-ORDER-002 - Search and filter');
   let controlled: ControlledOrder | undefined;
   try {
     controlled = await orderService.createControlledOrder('ui-order-filter', 'paid');
     await page.goto('/orders');
-    await step('When: se busca el ID y se filtra por estado', async () => {
+    await step('When: user searches the ID and filters by status', async () => {
       await page.getByTestId('orders-search').fill(String(controlled!.order.id));
       await page.getByTestId('orders-status-filter').selectOption(controlled!.order.payment_status);
     });
-    await step('Then: sólo aparece la orden controlada', async () => {
+    await step('Then: only the controlled order is displayed', async () => {
       await expect(page.getByTestId(`order-row-id-${controlled!.order.id}`)).toBeVisible();
       await expect(page.getByTestId(/^order-row-id-\d+$/)).toHaveCount(1);
     });
@@ -246,15 +246,15 @@ test('[UI-ORDER-002] Historial busca y filtra una orden controlada', async ({ pa
   }
 });
 
-test('[UI-ORDER-003] Historial pagina de forma estable', async ({ page }) => {
+test('[UI-ORDER-003] History paginates consistently', async ({ page }) => {
   await labels('Orders UI', 'UI-ORDER-003 - Paginate history');
   await page.goto('/orders');
   await page.getByTestId('orders-items-per-page').selectOption('10');
-  await step('Then: la primera página respeta el límite', async () => {
+  await step('Then: the first page honors the limit', async () => {
     await expect(page.getByTestId(/^order-row-id-\d+$/)).toHaveCount(10);
     await expect(page.getByTestId('orders-page-indicator')).toContainText('Page 1');
   });
-  await step('When: se avanza, el indicador cambia y volver restaura la página', async () => {
+  await step('When: user advances and returns, the indicator tracks the page', async () => {
     await page.getByTestId('orders-next').click();
     await expect(page.getByTestId('orders-page-indicator')).toContainText('Page 2');
     await page.getByTestId('orders-prev').click();

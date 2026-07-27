@@ -12,20 +12,20 @@ async function labels(feature: string, story: string) {
   await allure.story(story);
 }
 
-test('[UI-AUTH-001] Login válido conserva una sesión autenticada', async ({ browser }) => {
-  await labels('Authentication UI', 'UI-AUTH-001 - Login válido');
+test('[UI-AUTH-001] Valid login preserves an authenticated session', async ({ browser }) => {
+  await labels('Authentication UI', 'UI-AUTH-001 - Valid login');
   const context = await browser.newContext();
   const page = await context.newPage();
   try {
-    await step('Given: se abre login sin una sesión previa', () => page.goto('/login'));
-    await step('When: se valida el correo y se envía la contraseña válida', async () => {
+    await step('Given: login opens without a previous session', () => page.goto('/login'));
+    await step('When: user validates the email and submits the valid password', async () => {
       await page.getByTestId('login-email').fill(environment.uiEmail);
       await page.getByTestId('login-continue').click();
       await expect(page.getByTestId('login-password')).toBeVisible();
       await page.getByTestId('login-password').fill(environment.uiPassword);
       await page.getByTestId('login-submit').click();
     });
-    await step('Then: la aplicación abre una ruta autenticada y guarda el token', async () => {
+    await step('Then: the application opens an authenticated route and stores the token', async () => {
       await expect(page).not.toHaveURL(/\/login$/);
       expect(await page.evaluate(() => localStorage.getItem('api_token'))).toBeTruthy();
     });
@@ -34,17 +34,17 @@ test('[UI-AUTH-001] Login válido conserva una sesión autenticada', async ({ br
   }
 });
 
-test('[UI-AUTH-002] Login inválido muestra un error trazable', async ({ browser }) => {
-  await labels('Authentication UI', 'UI-AUTH-002 - Login inválido');
+test('[UI-AUTH-002] Invalid login displays a traceable error', async ({ browser }) => {
+  await labels('Authentication UI', 'UI-AUTH-002 - Invalid login');
   const context = await browser.newContext();
   const page = await context.newPage();
   try {
     await page.goto('/login');
-    await step('When: se intenta continuar con una cuenta inexistente', async () => {
+    await step('When: user attempts to continue with a nonexistent account', async () => {
       await page.getByTestId('login-email').fill(`missing-${Date.now()}@example.invalid`);
       await page.getByTestId('login-continue').click();
     });
-    await step('Then: no se crea sesión y se presenta el error', async () => {
+    await step('Then: no session is created and an error is displayed', async () => {
       await expect(page.getByTestId('login-error')).toBeVisible();
       expect(await page.evaluate(() => localStorage.getItem('api_token'))).toBeNull();
       await expect(page).toHaveURL(/\/login$/);
@@ -54,7 +54,7 @@ test('[UI-AUTH-002] Login inválido muestra un error trazable', async ({ browser
   }
 });
 
-test('[UI-SHELL-001] Aceptar Terms Gate persiste el consentimiento', async ({ browser }) => {
+test('[UI-SHELL-001] Accepting the Terms Gate persists consent', async ({ browser }) => {
   await labels('Application shell UI', 'UI-SHELL-001 - Accept Terms Gate');
   const context = await browser.newContext();
   await context.addInitScript(({ apiKey, email }) => {
@@ -66,9 +66,9 @@ test('[UI-SHELL-001] Aceptar Terms Gate persiste el consentimiento', async ({ br
   try {
     await page.goto('/store');
     await expect(page.getByTestId('terms-gate-dialog')).toBeVisible();
-    await step('When: el usuario acepta los términos', () =>
+    await step('When: user accepts the terms', () =>
       page.getByTestId('terms-gate-accept').click());
-    await step('Then: el diálogo se oculta y el consentimiento queda persistido', async () => {
+    await step('Then: the dialog closes and consent remains persisted', async () => {
       await expect(page.getByTestId('terms-gate-dialog')).toBeHidden();
       expect(await page.evaluate(() =>
         localStorage.getItem('qa-academy-terms-consent-v1'))).toBe('accepted');
@@ -78,30 +78,30 @@ test('[UI-SHELL-001] Aceptar Terms Gate persiste el consentimiento', async ({ br
   }
 });
 
-test('[UI-SHELL-002] Navegación responsive expone sidebar y drawer', async ({ page }) => {
+test('[UI-SHELL-002] Responsive navigation exposes the sidebar and drawer', async ({ page }) => {
   await labels('Application shell UI', 'UI-SHELL-002 - Responsive navigation');
   await page.goto('/store');
-  await step('Then: escritorio muestra sidebar y ruta activa', async () => {
+  await step('Then: desktop shows the sidebar and active route', async () => {
     await expect(page.getByTestId('primary-sidebar')).toBeVisible();
     await expect(page.getByTestId('desktop-nav').getByRole('link', { name: /store/i }))
       .toHaveAttribute('aria-current', 'page');
   });
-  await step('When: la ventana cambia a ancho móvil', async () => {
+  await step('When: viewport changes to mobile width', async () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.getByTestId('mobile-menu-open')).toBeVisible();
     await page.getByTestId('mobile-menu-open').click();
   });
-  await step('Then: el drawer móvil permite navegar y cerrar', async () => {
+  await step('Then: the mobile drawer can be opened and closed', async () => {
     await expect(page.getByTestId('mobile-nav')).toBeVisible();
     await page.getByTestId('mobile-menu-close').click();
     await expect(page.getByTestId('mobile-nav')).toBeHidden();
   });
 });
 
-test('[UI-STORE-001] Store carga catálogo y controles', async ({ page }) => {
+test('[UI-STORE-001] Store loads its catalog and controls', async ({ page }) => {
   await labels('Store UI', 'UI-STORE-001 - Load Store');
-  await step('When: se abre el Store', () => page.goto('/store'));
-  await step('Then: catálogo, búsqueda y filtros están utilizables', async () => {
+  await step('When: user opens the Store', () => page.goto('/store'));
+  await step('Then: catalog, search and filters are usable', async () => {
     await expect(page.getByTestId('store-search')).toBeVisible();
     await expect(page.getByTestId('store-category-filter')).toBeVisible();
     await expect(page.getByTestId('store-type-filter')).toBeVisible();
@@ -117,11 +117,11 @@ test('[UI-STORE-002] Store busca y filtra productos', async ({ page, productServ
       name: uniqueProductName('ui-store-filter'), ...teachingData.product, category: 'Office',
     });
     await page.goto('/store');
-    await step('When: se busca por nombre y se filtra la categoría', async () => {
+    await step('When: user searches by name and filters the category', async () => {
       await page.getByTestId('store-search').fill(product!.name);
       await page.getByTestId('store-category-filter').getByRole('button', { name: 'Office' }).click();
     });
-    await step('Then: sólo el producto controlado permanece visible', async () => {
+    await step('Then: only the controlled product remains visible', async () => {
       await expect(page.getByTestId(`product-add-to-cart-${product!.id}`)).toBeVisible();
       await expect(page.getByTestId(/^product-add-to-cart-\d+$/)).toHaveCount(1);
     });
@@ -130,13 +130,13 @@ test('[UI-STORE-002] Store busca y filtra productos', async ({ page, productServ
   }
 });
 
-test('[UI-STORE-003] Store pagina respetando el tamaño seleccionado', async ({ page }) => {
+test('[UI-STORE-003] Store paginates using the selected page size', async ({ page }) => {
   await labels('Store UI', 'UI-STORE-003 - Pagination');
   await page.goto('/store');
-  await step('When: se selecciona el menor tamaño de página', async () => {
+  await step('When: user selects the smallest page size', async () => {
     await page.getByTestId('store-items-per-page').selectOption('5');
   });
-  await step('Then: se limita el catálogo y la navegación cambia de página', async () => {
+  await step('Then: the catalog is limited and navigation changes page', async () => {
     await expect(page.getByTestId(/^product-add-to-cart-\d+$/)).toHaveCount(5);
     await expect(page.getByTestId('store-page-indicator')).toContainText('Page 1');
     await page.getByTestId('store-next').click();
@@ -144,15 +144,15 @@ test('[UI-STORE-003] Store pagina respetando el tamaño seleccionado', async ({ 
   });
 });
 
-test('[UI-PRODUCT-001] Producto propio creado queda visible en administración', async ({ page, productService }) => {
+test('[UI-PRODUCT-001] A newly created owned product is visible in administration', async ({ page, productService }) => {
   await labels('Products UI', 'UI-PRODUCT-001 - Create owned product');
   let product: Product | undefined;
   try {
-    product = await step('Given: la API crea el dato controlado porque la UI no ofrece alta', () =>
+    product = await step('Given: API creates controlled data because the UI has no create control', () =>
       productService.createProduct({ name: uniqueProductName('ui-create'), ...teachingData.product }));
     await page.goto('/products');
     await page.getByTestId('products-search').fill(product.name);
-    await step('Then: administración refleja el producto y su ID persistente', async () => {
+    await step('Then: administration displays the product and its persistent ID', async () => {
       await expect(page.getByTestId(`product-row-${product!.id}`)).toContainText(product!.name);
     });
   } finally {
@@ -160,7 +160,7 @@ test('[UI-PRODUCT-001] Producto propio creado queda visible en administración',
   }
 });
 
-test('[UI-PRODUCT-002] Producto propio editado se actualiza en administración', async ({ page, productService }) => {
+test('[UI-PRODUCT-002] An edited owned product is updated in administration', async ({ page, productService }) => {
   await labels('Products UI', 'UI-PRODUCT-002 - Edit owned product');
   let product: Product | undefined;
   try {
@@ -168,12 +168,9 @@ test('[UI-PRODUCT-002] Producto propio editado se actualiza en administración',
       name: uniqueProductName('ui-edit'), ...teachingData.product,
     });
     const editedName = `${product.name}-edited`;
-    await step('When: la API actualiza el dato porque la UI no ofrece edición', async () => {
-      const response = await page.request.patch(`/api/products/${product!.id}`, {
-        headers: { Authorization: `Bearer ${environment.apiKey}` },
-        data: { name: editedName },
-      });
-      expect(response.status()).toBe(200);
+    await step('When: API updates controlled data because the UI has no edit control', async () => {
+      const updated = await productService.updateProduct(product!.id, { name: editedName });
+      expect(updated.name).toBe(editedName);
     });
     await page.goto('/products');
     await page.getByTestId('products-search').fill(editedName);
@@ -183,7 +180,7 @@ test('[UI-PRODUCT-002] Producto propio editado se actualiza en administración',
   }
 });
 
-test('[UI-PRODUCT-003] Producto propio se elimina desde la UI', async ({ page, productService }) => {
+test('[UI-PRODUCT-003] An owned product is deleted from the UI', async ({ page, productService }) => {
   await labels('Products UI', 'UI-PRODUCT-003 - Delete owned product');
   const product = await productService.createProduct({
     name: uniqueProductName('ui-delete'), ...teachingData.product,
@@ -192,10 +189,10 @@ test('[UI-PRODUCT-003] Producto propio se elimina desde la UI', async ({ page, p
   try {
     await page.goto('/products');
     await page.getByTestId('products-search').fill(product.name);
-    await step('When: se elimina la fila persistente desde administración', async () => {
+    await step('When: user deletes the persistent row from administration', async () => {
       await page.getByTestId(`product-delete-${product.id}`).click();
     });
-    await step('Then: aparece confirmación y la fila desaparece', async () => {
+    await step('Then: confirmation appears and the row disappears', async () => {
       await expect(page.getByTestId('products-success-toast')).toBeVisible();
       await expect(page.getByTestId(`product-row-${product.id}`)).toHaveCount(0);
       deleted = true;
@@ -205,12 +202,12 @@ test('[UI-PRODUCT-003] Producto propio se elimina desde la UI', async ({ page, p
   }
 });
 
-test('[UI-PRODUCT-004] Producto no eliminable mantiene protegida su fila', async ({ page }) => {
+test('[UI-PRODUCT-004] A non-deletable product keeps its row protected', async ({ page }) => {
   await labels('Products UI', 'UI-PRODUCT-004 - Protected product');
   await page.goto('/products');
   await page.getByTestId('products-type-filter').getByRole('button', { name: 'Template' }).click();
   const row = page.getByTestId(/^product-row-\d+$/).first();
-  await step('When: se intenta eliminar un producto de plantilla protegido', async () => {
+  await step('When: user attempts to delete a protected template product', async () => {
     await expect(row).toBeVisible();
     const id = (await row.getAttribute('data-testid'))!.replace('product-row-', '');
     await page.getByTestId(`product-delete-${id}`).click();

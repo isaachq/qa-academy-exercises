@@ -1,9 +1,13 @@
 import { allure } from 'allure-playwright';
-import type { APIRequestContext } from '@playwright/test';
+import type { APIRequestContext, TestInfo } from '@playwright/test';
 import { environment } from '../../config/environment.js';
 import { test, expect } from '../../fixtures/test.js';
 import { step } from '../../helpers/steps.js';
 import { uniqueProductName } from '../../helpers/unique_name.js';
+import {
+  expectApiJson,
+  guardedApi,
+} from '../../helpers/api_response.js';
 
 type GraphQLResponse<T> = {
   data?: T;
@@ -17,16 +21,18 @@ const headers = () => ({
 
 async function graphql<T>(
   request: APIRequestContext,
+  testInfo: TestInfo,
   query: string,
   variables: Record<string, unknown> = {},
   operationName?: string,
 ) {
-  const response = await request.post('/api/graphql', {
-    headers: headers(),
-    data: { query, variables, operationName },
-  });
+  const response = await guardedApi(testInfo, () =>
+    request.post('/api/graphql', {
+      headers: headers(),
+      data: { query, variables, operationName },
+    }));
   expect(response.status()).toBe(200);
-  return (await response.json()) as GraphQLResponse<T>;
+  return expectApiJson<GraphQLResponse<T>>(response);
 }
 
 async function labels(story: string) {
@@ -35,11 +41,12 @@ async function labels(story: string) {
   await allure.story(story);
 }
 
-test('[API-GQL-001] Authenticated query returns the current user', async ({ request }) => {
+test('[API-GQL-001] Authenticated query returns the current user', async ({ request }, testInfo) => {
   await labels('API-GQL-001 - Authenticated query');
   const payload = await step('When: client executes the named CurrentUser query', () =>
     graphql<{ me: { id: string; email: string } }>(
       request,
+      testInfo,
       'query CurrentUser { me { id email } }',
       {},
       'CurrentUser',
@@ -51,14 +58,14 @@ test('[API-GQL-001] Authenticated query returns the current user', async ({ requ
   });
 });
 
-test('[API-GQL-002] GraphQL validation errors use HTTP 200 and errors array', async ({ request }) => {
+test('[API-GQL-002] GraphQL validation errors use HTTP 200 and errors array', async ({ request }, testInfo) => {
   await labels('API-GQL-002 - Error model');
   const response = await step('When: client requests a field absent from the schema', () =>
-    request.post('/api/graphql', {
+    guardedApi(testInfo, () => request.post('/api/graphql', {
       headers: headers(),
       data: { query: 'query InvalidField { me { field_that_does_not_exist } }' },
-    }));
-  const payload = (await response.json()) as GraphQLResponse<unknown>;
+    })));
+  const payload = await expectApiJson<GraphQLResponse<unknown>>(response);
   await step('Then: transport succeeds and the GraphQL error is explicit', async () => {
     expect(response.status()).toBe(200);
     expect(payload.data).toBeUndefined();
@@ -66,7 +73,7 @@ test('[API-GQL-002] GraphQL validation errors use HTTP 200 and errors array', as
   });
 });
 
-test('[API-GQL-003] Products query honors variables and pagination metadata', async ({ request }) => {
+test('[API-GQL-003] Products query honors variables and pagination metadata', async ({ request }, testInfo) => {
   await labels('API-GQL-003 - Paginated products');
   const payload = await step('When: client queries a two-row product page with variables', () =>
     graphql<{
@@ -76,6 +83,7 @@ test('[API-GQL-003] Products query honors variables and pagination metadata', as
       };
     }>(
       request,
+      testInfo,
       `query ProductInventory($page: Int!, $limit: Int!) {
         products(page: $page, limit: $limit) {
           products { id name price stock }
@@ -92,13 +100,14 @@ test('[API-GQL-003] Products query honors variables and pagination metadata', as
   );
 });
 
-test('[API-GQL-004] Product mutation creates updates and deletes controlled data', async ({ request }) => {
+test('[API-GQL-004] Product mutation creates updates and deletes controlled data', async ({ request }, testInfo) => {
   await labels('API-GQL-004 - Product mutation with cleanup');
   let productId: string | undefined;
   try {
     const created = await step('Given: client creates a uniquely named GraphQL product', () =>
       graphql<{ createProduct: { id: string; name: string; permissions: string } }>(
         request,
+        testInfo,
         `mutation CreateProduct($name: String!) {
           createProduct(name: $name, description: "GraphQL traceability", price: 19.95, stock: 7, category: "Office") {
             id name permissions
@@ -114,6 +123,7 @@ test('[API-GQL-004] Product mutation creates updates and deletes controlled data
     const updated = await step('When: owner updates the controlled product', () =>
       graphql<{ updateProduct: { id: string; price: number; stock: number } }>(
         request,
+        testInfo,
         `mutation UpdateProduct($id: ID!) {
           updateProduct(id: $id, price: 24.5, stock: 9) { id price stock }
         }`,
@@ -128,6 +138,7 @@ test('[API-GQL-004] Product mutation creates updates and deletes controlled data
     if (productId) {
       const deleted = await graphql<{ deleteProduct: boolean }>(
         request,
+        testInfo,
         'mutation DeleteProduct($id: ID!) { deleteProduct(id: $id) }',
         { id: productId },
         'DeleteProduct',
@@ -138,12 +149,12 @@ test('[API-GQL-004] Product mutation creates updates and deletes controlled data
   }
 });
 
-test('[API-GQL-005] Cart mutations add update remove and clear items', async ({ request }) => {
+test('[API-GQL-005] Cart mutations add update remove and clear items', async ({ request }, testInfo) => {
   await labels('API-GQL-005 - Cart');
-  await graphql<{ clearCart: boolean }>(request, 'mutation { clearCart }');
+  await graphql<{ clearCart: boolean }>(request, testInfo, 'mutation { clearCart }');
   const inventory = await graphql<{
     products: { products: Array<{ id: string; stock: number }> };
-  }>(request, 'query { products(page: 1, limit: 100) { products { id stock } } }');
+  }>(request, testInfo, 'query { products(page: 1, limit: 100) { products { id stock } } }');
   const product = inventory.data!.products.products.find(({ stock }) => stock >= 3);
   expect(product, 'A product with at least three units is required').toBeTruthy();
 
@@ -151,6 +162,7 @@ test('[API-GQL-005] Cart mutations add update remove and clear items', async ({ 
     const added = await step('Given: client adds an available product to the cart', () =>
       graphql<{ addToCart: { id: string; product_id: number; quantity: number } }>(
         request,
+        testInfo,
         `mutation Add($productId: Int!) {
           addToCart(product_id: $productId, quantity: 1) { id product_id quantity }
         }`,
@@ -163,6 +175,7 @@ test('[API-GQL-005] Cart mutations add update remove and clear items', async ({ 
     const updated = await step('When: client changes the persistent cart item quantity', () =>
       graphql<{ updateCartItem: { id: string; quantity: number } }>(
         request,
+        testInfo,
         `mutation UpdateCart($id: ID!) {
           updateCartItem(id: $id, quantity: 3) { id quantity }
         }`,
@@ -174,6 +187,7 @@ test('[API-GQL-005] Cart mutations add update remove and clear items', async ({ 
     const removed = await step('Then: client removes that exact cart item', () =>
       graphql<{ removeFromCart: boolean }>(
         request,
+        testInfo,
         'mutation RemoveCart($id: ID!) { removeFromCart(id: $id) }',
         { id: cartItemId },
         'RemoveCart',
@@ -181,38 +195,41 @@ test('[API-GQL-005] Cart mutations add update remove and clear items', async ({ 
     expect(removed.data?.removeFromCart).toBe(true);
     const cart = await graphql<{ cart: { items: unknown[]; item_count: number } }>(
       request,
+      testInfo,
       'query { cart { items { id } item_count } }',
     );
     expect(cart.data?.cart.item_count).toBe(0);
   } finally {
-    await graphql<{ clearCart: boolean }>(request, 'mutation { clearCart }');
+    await graphql<{ clearCart: boolean }>(request, testInfo, 'mutation { clearCart }');
   }
 });
 
-test('[API-GQL-006] Order mutation persists the cart and computed financial values', async ({ request }) => {
+test('[API-GQL-006] Order mutation persists the cart and computed financial values', async ({ request }, testInfo) => {
   await labels('API-GQL-006 - Order');
-  await graphql<{ clearCart: boolean }>(request, 'mutation { clearCart }');
+  await graphql<{ clearCart: boolean }>(request, testInfo, 'mutation { clearCart }');
   let orderId: string | undefined;
   try {
     const inventory = await graphql<{
       products: { products: Array<{ id: string; stock: number }> };
-    }>(request, 'query { products(page: 1, limit: 100) { products { id stock } } }');
+    }>(request, testInfo, 'query { products(page: 1, limit: 100) { products { id stock } } }');
     const product = inventory.data!.products.products.find(({ stock }) => stock >= 1);
     expect(product).toBeTruthy();
     await graphql(
       request,
+      testInfo,
       'mutation Add($id: Int!) { addToCart(product_id: $id, quantity: 1) { id } }',
       { id: Number(product!.id) },
       'Add',
     );
     const preview = await graphql<{
       cartSummary: { summary: { tax: number; shipping_cost: number; total: number } };
-    }>(request, 'query { cartSummary { summary { tax shipping_cost total } } }');
+    }>(request, testInfo, 'query { cartSummary { summary { tax shipping_cost total } } }');
     const summary = preview.data!.cartSummary.summary;
 
     const created = await step('When: client creates an order from its current cart', () =>
       graphql<{ createOrder: { id: string; total: number; status: string; items: unknown[] } }>(
         request,
+        testInfo,
         `mutation CreateOrder($financial: FinancialInput!) {
           createOrder(
             shipping: {
@@ -245,21 +262,23 @@ test('[API-GQL-006] Order mutation persists the cart and computed financial valu
 
     const queried = await graphql<{ order: { id: string; status: string } }>(
       request,
+      testInfo,
       'query Order($id: ID!) { order(id: $id) { id status } }',
       { id: orderId },
       'Order',
     );
     expect(queried.data?.order.id).toBe(orderId);
   } finally {
-    await graphql<{ clearCart: boolean }>(request, 'mutation { clearCart }');
+    await graphql<{ clearCart: boolean }>(request, testInfo, 'mutation { clearCart }');
     if (orderId) {
-      const cleanup = await request.delete(`/api/orders/${orderId}?force=true`, { headers: headers() });
+      const cleanup = await guardedApi(testInfo, () =>
+        request.delete(`/api/orders/${orderId}?force=true`, { headers: headers() }));
       expect([200, 404]).toContain(cleanup.status());
     }
   }
 });
 
-test('[API-GQL-007] Order search returns filters summary and pagination', async ({ request }) => {
+test('[API-GQL-007] Order search returns filters summary and pagination', async ({ request }, testInfo) => {
   await labels('API-GQL-007 - Search orders');
   const payload = await step('When: client searches its orders with pagination', () =>
     graphql<{
@@ -272,6 +291,7 @@ test('[API-GQL-007] Order search returns filters summary and pagination', async 
       };
     }>(
       request,
+      testInfo,
       `query SearchOrders($filters: OrderSearchFiltersInput, $page: Int!, $limit: Int!) {
         searchOrders(filters: $filters, page: $page, limit: $limit) {
           success

@@ -21,16 +21,16 @@ async function runLab(page: import('@playwright/test').Page) {
   await expect(page.getByTestId('query-lab-loading')).toBeHidden();
 }
 
-test('[UI-QUERY-001] Query Lab consulta productos con documento visible', async ({ page }) => {
+test('[UI-QUERY-001] Query Lab queries products with a visible document', async ({ page }) => {
   await labels('Query Lab UI', 'UI-QUERY-001 - Query products');
   await openLab(page);
-  await step('When: se configuran filtros y se ejecuta QUERY de productos', async () => {
+  await step('When: user configures filters and runs a product QUERY', async () => {
     await page.getByTestId('query-lab-search').fill('a');
     await page.getByTestId('query-lab-sort-field').selectOption('price');
     await page.getByTestId('query-lab-sort-direction').selectOption('asc');
     await runLab(page);
   });
-  await step('Then: preview, transporte, tabla y metadata son coherentes', async () => {
+  await step('Then: preview, transport, table and metadata are consistent', async () => {
     await expect(page.getByTestId('query-lab-preview-code')).toContainText('QUERY');
     await expect(page.getByTestId('query-lab-status-badge')).toContainText('200');
     await expect(page.getByTestId('query-lab-transport-badge')).toContainText('QUERY');
@@ -38,36 +38,36 @@ test('[UI-QUERY-001] Query Lab consulta productos con documento visible', async 
   });
 });
 
-test('[UI-QUERY-002] Query Lab consulta órdenes y usa el campo total', async ({ page }) => {
+test('[UI-QUERY-002] Query Lab queries orders and uses the total field', async ({ page }) => {
   await labels('Query Lab UI', 'UI-QUERY-002 - Query orders');
   await openLab(page);
-  await step('When: se cambia a órdenes y se ordena por total', async () => {
+  await step('When: user switches to orders and sorts by total', async () => {
     await page.getByTestId('query-lab-resource-orders').click();
     await page.getByTestId('query-lab-sort-field').selectOption('total');
     await runLab(page);
   });
-  await step('Then: resultados y encabezado usan total, no total_amount', async () => {
+  await step('Then: results and header use total rather than total_amount', async () => {
     await expect(page.getByTestId('query-lab-transport-badge')).toContainText('QUERY');
     await expect(page.getByTestId('query-lab-th-total')).toBeVisible();
     await expect(page.getByTestId('query-lab-results')).not.toContainText('total_amount');
   });
 });
 
-test('[UI-QUERY-003] Query Lab cambia al transporte POST override', async ({ page }) => {
+test('[UI-QUERY-003] Query Lab switches to POST override transport', async ({ page }) => {
   await labels('Query Lab UI', 'UI-QUERY-003 - Change transport');
   await openLab(page);
-  await step('When: se selecciona POST con X-HTTP-Method-Override', async () => {
+  await step('When: user selects POST with X-HTTP-Method-Override', async () => {
     await page.getByTestId('query-lab-transport-override').click();
     await expect(page.getByTestId('query-lab-preview-code'))
       .toContainText('X-HTTP-Method-Override: QUERY');
     await runLab(page);
   });
-  await step('Then: la respuesta identifica POST_OVERRIDE', async () => {
+  await step('Then: the response identifies POST_OVERRIDE', async () => {
     await expect(page.getByTestId('query-lab-transport-badge')).toContainText('POST_OVERRIDE');
   });
 });
 
-test('[UI-QUERY-004] Query Lab expone loading vacío error y cooldown', async ({ page }) => {
+test('[UI-QUERY-004] Query Lab exposes loading empty error and cooldown states', async ({ page }) => {
   await labels('Query Lab UI', 'UI-QUERY-004 - Loading empty error cooldown');
   await openLab(page);
   let delayed = false;
@@ -78,23 +78,23 @@ test('[UI-QUERY-004] Query Lab expone loading vacío error y cooldown', async ({
     }
     await route.continue();
   });
-  await step('When: una consulta real permanece en vuelo', async () => {
+  await step('When: a real query remains in flight', async () => {
     await page.getByTestId('query-lab-run').click();
     await expect(page.getByTestId('query-lab-loading')).toBeVisible();
     await expect(page.getByTestId('query-lab-loading')).toBeHidden();
   });
-  await step('Then: inicia el cooldown accesible', async () => {
+  await step('Then: the accessible cooldown starts', async () => {
     await expect(page.getByTestId('query-lab-cooldown-toast')).toBeVisible();
     await expect(page.getByTestId('query-lab-run')).toBeDisabled();
     await expect(page.getByTestId('query-lab-run')).toBeEnabled({ timeout: 5_000 });
   });
-  await step('When: una búsqueda no coincide, aparece el estado vacío', async () => {
+  await step('When: a search has no matches, the empty state appears', async () => {
     await page.getByTestId('query-lab-search').fill(`no-result-${Date.now()}`);
     await runLab(page);
     await expect(page.getByTestId('query-lab-no-results')).toBeVisible();
     await expect(page.getByTestId('query-lab-run')).toBeEnabled({ timeout: 5_000 });
   });
-  await step('When: el rango es inválido, el error del servidor es visible', async () => {
+  await step('When: the range is invalid, the server error is visible', async () => {
     await page.getByTestId('query-lab-search').fill('');
     await page.getByTestId('query-lab-price-min').fill('100');
     await page.getByTestId('query-lab-price-max').fill('1');
@@ -103,11 +103,11 @@ test('[UI-QUERY-004] Query Lab expone loading vacío error y cooldown', async ({
   });
 });
 
-test('[UI-MOBILE-001] Store se adapta a viewport móvil sin desbordamiento', async ({ page }) => {
+test('[UI-MOBILE-001] Store adapts to a mobile viewport without overflow', async ({ page }) => {
   await labels('Mobile UI', 'UI-MOBILE-001 - Responsive Store');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/store');
-  await step('Then: controles principales y tarjetas caben en el viewport', async () => {
+  await step('Then: primary controls and cards fit inside the viewport', async () => {
     await expect(page.getByTestId('mobile-menu-open')).toBeVisible();
     await expect(page.getByTestId('store-search')).toBeVisible();
     await expect(page.getByTestId(/^product-add-to-cart-\d+$/).first()).toBeVisible();
@@ -116,7 +116,7 @@ test('[UI-MOBILE-001] Store se adapta a viewport móvil sin desbordamiento', asy
   });
 });
 
-test('[UI-MOBILE-002] Carrito y modal conservan contrato responsive', async ({ page, productService }) => {
+test('[UI-MOBILE-002] Cart and modal preserve the responsive contract', async ({ page, productService }) => {
   await labels('Mobile UI', 'UI-MOBILE-002 - Responsive cart and modal');
   let product: Product | undefined;
   try {
@@ -145,11 +145,11 @@ test('[UI-MOBILE-002] Carrito y modal conservan contrato responsive', async ({ p
   }
 });
 
-test('[UI-MOBILE-003] Playground mantiene sus secciones utilizables en móvil', async ({ page }) => {
+test('[UI-MOBILE-003] Playground keeps its sections usable on mobile', async ({ page }) => {
   await labels('Mobile UI', 'UI-MOBILE-003 - Responsive Playground');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/playground');
-  await step('Then: controles iniciales, tabla y Shadow DOM no generan desbordamiento global', async () => {
+  await step('Then: initial controls, table and Shadow DOM do not cause global overflow', async () => {
     await expect(page.getByTestId('section-text-inputs')).toBeVisible();
     await expect(page.getByTestId('section-advanced-datatable')).toBeVisible();
     await expect(page.getByTestId('section-shadow-dom')).toBeVisible();
