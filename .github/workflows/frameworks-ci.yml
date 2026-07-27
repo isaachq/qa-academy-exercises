@@ -131,6 +131,7 @@ jobs:
       matrix:
         framework:
           - typescript-playwright
+          - typescript-cypress
           - python-playwright
           - java-selenium-rest-assured
     env:
@@ -155,6 +156,19 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
           npm test
+      - name: Run TypeScript Cypress scenarios
+        if: matrix.framework == 'typescript-cypress'
+        working-directory: frameworks/typescript-cypress
+        run: |
+          npm ci
+          export NODE_PATH="$PWD/node_modules"
+          node -e "console.log(require.resolve('@babel/preset-typescript'))"
+          rm -rf allure-results allure-results-desktop allure-results-mobile
+          ALLURE_RESULTS_DIR=allure-results-desktop npm run test:desktop
+          ALLURE_RESULTS_DIR=allure-results-mobile npm run test:mobile
+          mkdir allure-results
+          cp -a allure-results-desktop/. allure-results/
+          cp -a allure-results-mobile/. allure-results/
       - name: Setup Python
         if: matrix.framework == 'python-playwright'
         uses: actions/setup-python@v5
@@ -189,7 +203,8 @@ jobs:
             RESULTS_DIR="target/allure-results"
           fi
           if [ -d "$RESULTS_DIR" ]; then
-            npx --yes allure-commandline@2.35.1 generate "$RESULTS_DIR" --clean -o allure-report
+            npx --yes allure-commandline@2.35.1 generate --single-file "$RESULTS_DIR" --clean -o allure-report
+            test -s allure-report/index.html
           fi
       - name: Upload Allure raw results
         id: upload-raw
@@ -206,8 +221,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report-${{ matrix.framework }}
-          path: frameworks/${{ matrix.framework }}/allure-report
+          name: allure-single-file-report-${{ matrix.framework }}
+          path: frameworks/${{ matrix.framework }}/allure-report/index.html
           if-no-files-found: warn
       - name: Upload Java Surefire diagnostics
         if: always() && matrix.framework == 'java-selenium-rest-assured'
@@ -222,5 +237,5 @@ jobs:
           echo "## ${{ matrix.framework }}" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Result: **${{ job.status }}**" >> "$GITHUB_STEP_SUMMARY"
-          echo "- [Download Allure HTML report](${{ steps.upload-html.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [Download self-contained Allure HTML report](${{ steps.upload-html.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"
           echo "- [Download raw Allure evidence](${{ steps.upload-raw.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"

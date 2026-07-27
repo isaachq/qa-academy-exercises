@@ -3,6 +3,7 @@ import { defineConfig } from 'cypress';
 import { allureCypress } from 'allure-cypress/reporter';
 
 const mobile = process.env.DEVICE_PROFILE === 'mobile';
+const allureResultsDir = process.env.ALLURE_RESULTS_DIR ?? 'allure-results';
 
 export default defineConfig({
   video: true,
@@ -14,7 +15,7 @@ export default defineConfig({
     specPattern: 'tests/**/*.spec.ts',
     supportFile: 'fixtures/support.ts',
     setupNodeEvents(on, config) {
-      allureCypress(on, config, { resultsDir: 'allure-results' });
+      allureCypress(on, config, { resultsDir: allureResultsDir });
       return config;
     },
   },

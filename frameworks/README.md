@@ -35,13 +35,14 @@ values before running live tests.
 ## GitHub Actions live execution
 
 The pull request workflow always compiles and collects all four projects. For branches in this
-repository, the three main frameworks also run their real UI and API scenarios automatically.
+repository, all four frameworks run their real UI and API scenarios automatically.
 Secrets are not exposed to pull requests from forks. A manual rerun remains available:
 
 1. Add `QA_ACADEMY_API_KEY` and `QA_ACADEMY_UI_EMAIL` as repository Actions secrets.
 2. Push or update a same-repository pull request, or open **Actions → Frameworks CI → Run workflow**.
 3. For a manual run, select the framework branch and start it.
-4. Open the run summary to download the generated Allure HTML report or its raw results.
+4. Open the run summary to download the generated self-contained Allure HTML report or its raw results.
+5. Extract the report artifact and open `index.html` directly; no local web server is required.
 
-The main frameworks execute sequentially so they cannot compete for the same cart, stock or orders.
-The Cypress project remains a compiled and type-checked comparison demo.
+All four frameworks execute sequentially so they cannot compete for the same cart, stock or orders.
+Cypress runs the desktop suite plus the mobile traceability scenario.
