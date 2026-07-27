@@ -19,7 +19,67 @@
   dedicados al login.
 - `orders.total` es el campo persistido. `total_amount` sólo es un agregado de resumen.
 
-## 2. Catálogo UI completo
+## 2. Qué código aparecerá en el libro
+
+El catálogo completo pertenece al repositorio, no a las páginas de Word. El capítulo imprimirá
+únicamente el núcleo necesario para enseñar la arquitectura.
+
+### Archivos de prueba completos
+
+Cada uno de los tres frameworks principales mostrará dos pruebas completas:
+
+1. **UI estándar — Store → carrito**
+   - preparar sesión mediante fixture;
+   - buscar un producto;
+   - agregarlo al carrito;
+   - comprobar item, cantidad y subtotal;
+   - utilizar Page Objects.
+2. **API estándar — ciclo de vida de producto**
+   - crear un producto único;
+   - consultarlo;
+   - actualizarlo;
+   - eliminarlo en cleanup;
+   - utilizar un Service Object.
+
+Esto produce **seis archivos de prueba completos en el libro**:
+
+| Framework | UI completo | API completo |
+|---|---|---|
+| Python | Store → carrito | Product lifecycle |
+| TypeScript | Store → carrito | Product lifecycle |
+| Java | Store → carrito | Product lifecycle |
+
+### Cypress en el libro
+
+Cypress tendrá la misma estructura en el repositorio. En Word se mostrará una comparación compacta
+del mismo caso UI y del mismo caso API, resaltando únicamente las diferencias de sintaxis y runner.
+No se repetirán dos archivos completos adicionales.
+
+### Técnicas mostradas como fragmentos
+
+Los siguientes temas requieren explicación, pero no otro archivo completo por lenguaje:
+
+- QUERY nativo y POST override;
+- GraphQL con `data` y `errors`;
+- Shadow DOM;
+- flakiness con seed reproducible;
+- Allure request/response y screenshot;
+- emulación móvil.
+
+El libro mostrará un fragmento de referencia y una tabla con su equivalente por stack. Después
+dirigirá al lector a la implementación completa en `qa-academy-exercises`.
+
+### Presupuesto editorial
+
+- 3 configuraciones principales explicadas.
+- 6 archivos de prueba completos.
+- Cypress como comparación breve.
+- Fragmentos avanzados seleccionados.
+- Ninguna impresión del catálogo completo.
+
+El principio editorial es: **el libro explica el patrón; el repositorio demuestra su cobertura**.
+
+## 3. Catálogo UI completo
 
 ### Autenticación y shell
 
@@ -96,7 +156,7 @@
 **Total UI de frameworks principales: 37 pruebas.**  
 **Subconjunto Cypress UI: 9 pruebas.**
 
-## 3. Catálogo API completo
+## 4. Catálogo API completo
 
 ### Auth y salud
 
@@ -169,7 +229,7 @@
 **Total API de frameworks principales: 38 pruebas.**  
 **Subconjunto Cypress API: 7 pruebas.**
 
-## 4. Resumen de ejecución
+## 5. Resumen del repositorio
 
 | Proyecto | UI | API | Total inicial |
 |---|---:|---:|---:|
@@ -178,23 +238,26 @@
 | Java/Selenium + REST Assured | 37 | 38 | 75 |
 | Cypress demo | 9 | 7 | 16 |
 
-Los 241 casos implementados no se imprimirán completos en el libro. El capítulo seleccionará ejemplos
-representativos; el repositorio contendrá el catálogo completo y sus comandos.
+Los 241 casos son el objetivo de cobertura extendida del repositorio y pueden incorporarse por
+fases. No representan 241 archivos ni 241 bloques que deban escribirse en el libro. Los casos
+parametrizados pueden compartir archivo sin perder su ID, y cada implementación que se agregue debe
+quedar conectada a CI.
 
-## 5. Orden de construcción
+## 6. Orden de construcción
 
 1. Crear la estructura idéntica de responsabilidades en los cuatro proyectos.
 2. Configurar smoke test, variables, redacción de secretos, Allure y CI.
-3. Implementar TypeScript/Playwright como referencia funcional.
-4. Implementar Python conservando intención, no traducción literal.
-5. Implementar Java respetando Maven, Selenium y REST Assured.
-6. Implementar el subconjunto Cypress en la misma arquitectura.
-7. Ejecutar primero UI/API smoke; después datos mutables y cleanup.
-8. Validar QUERY nativo en los cuatro clientes.
-9. Ejecutar cada catálogo mediante sus comandos de CI.
-10. Sólo después elegir los fragmentos que aparecerán en el capítulo 5.
+3. Implementar primero los dos casos que aparecerán en el libro.
+4. Implementar TypeScript/Playwright como referencia para la cobertura extendida.
+5. Implementar Python conservando intención, no traducción literal.
+6. Implementar Java respetando Maven, Selenium y REST Assured.
+7. Implementar el subconjunto Cypress en la misma arquitectura.
+8. Ejecutar primero UI/API smoke; después datos mutables y cleanup.
+9. Validar QUERY nativo en los cuatro clientes.
+10. Incorporar el catálogo extendido por fases, siempre conectado a CI.
+11. Seleccionar fragmentos avanzados sólo después de que compilen y pasen.
 
-## 6. Decisiones que ya no requieren confirmación
+## 7. Decisiones que ya no requieren confirmación
 
 - Los cuatro proyectos comparten carpetas y responsabilidades.
 - Cypress incluye `tests/ui`, `tests/api`, `pages`, `services`, `fixtures`, `helpers`, `data` y
@@ -204,8 +267,9 @@ representativos; el repositorio contendrá el catálogo completo y sus comandos.
 - Las pruebas de registro y certificación permanecen fuera de alcance.
 - MCP permanece en el capítulo de IA.
 - Ninguna prueba se considera terminada hasta ejecutarse en CI.
+- El libro imprime seis tests completos, no el catálogo extendido.
 
-## 7. Único checkpoint antes de programar
+## 8. Único checkpoint antes de programar
 
 Antes de crear los cuatro proyectos, revisar este catálogo por:
 
