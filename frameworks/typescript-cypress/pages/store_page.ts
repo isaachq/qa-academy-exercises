@@ -89,7 +89,10 @@ export class StorePage {
         expect(box.height, 'modal height').to.be.at.most(Cypress.config('viewportHeight'));
 
         const backdrop = modal.parentElement;
-        expect(backdrop, 'modal backdrop').to.not.be.null;
+        // Assert on booleans and strings rather than on DOM nodes: a failed
+        // assertion carrying a live DOM node makes the report serialize the whole
+        // element graph.
+        expect(backdrop !== null, 'modal has a backdrop element').to.eq(true);
         expect(getComputedStyle(backdrop!).position, 'backdrop position').to.eq('fixed');
         expect(getComputedStyle(modal).overflowY, 'modal overflow-y').to.eq('auto');
         const hitTarget = modal.ownerDocument.elementFromPoint(1, 1);
@@ -99,7 +102,15 @@ export class StorePage {
         ).to.eq(true);
       });
       cy.get('[data-testid="order-history-close"]').should('be.visible').click();
-      cy.get('[data-testid="order-history-modal"]').should('not.exist');
+      // The other three frameworks accept a modal that is hidden or removed, so
+      // assert the same contract instead of requiring removal from the DOM.
+      cy.get('body').should(($body) => {
+        const modal = $body.find('[data-testid="order-history-modal"]');
+        expect(
+          modal.length === 0 || !modal.is(':visible'),
+          'order history modal is closed',
+        ).to.eq(true);
+      });
     });
   }
 }
