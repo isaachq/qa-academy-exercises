@@ -138,6 +138,7 @@ jobs:
       BASE_URL: https://qaacademyabc.xyz
       API_KEY: ${{ secrets.QA_ACADEMY_API_KEY }}
       UI_EMAIL: ${{ secrets.QA_ACADEMY_UI_EMAIL }}
+      UI_PASSWORD: ${{ secrets.QA_ACADEMY_UI_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -145,6 +146,7 @@ jobs:
         run: |
           test -n "$API_KEY"
           test -n "$UI_EMAIL"
+          test -n "$UI_PASSWORD"
       - name: Setup Node
         uses: actions/setup-node@v4
         with:

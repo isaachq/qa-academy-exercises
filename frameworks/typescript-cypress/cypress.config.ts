@@ -58,6 +58,7 @@ export default defineConfig({
   env: {
     apiKey: process.env.API_KEY,
     uiEmail: process.env.UI_EMAIL,
+    uiPassword: process.env.UI_PASSWORD,
     deviceProfile: process.env.DEVICE_PROFILE ?? 'desktop',
   },
 });
