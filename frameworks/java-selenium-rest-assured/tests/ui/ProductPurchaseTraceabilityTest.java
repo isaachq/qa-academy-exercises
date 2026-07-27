@@ -21,7 +21,7 @@ import services.ProductService;
 
 @Epic("Chapter 5")
 @Feature("UI automation")
-@Story("Product purchase traceability")
+@Story("BOOK-TEST-UI-001 - Product purchase traceability")
 class ProductPurchaseTraceabilityTest {
     @DisplayName(Steps.Titles.PRODUCT_PURCHASE_TRACEABILITY)
     @ParameterizedTest(name = Steps.Titles.PRODUCT_PURCHASE_TRACEABILITY + " [mobile={0}]")

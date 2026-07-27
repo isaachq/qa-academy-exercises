@@ -7,7 +7,7 @@ import { PlaygroundPage } from '../../pages/playground_page.js';
 test(TITLES.playgroundFlaky, async ({ page }) => {
   await allure.epic('Chapter 5');
   await allure.feature('Playground');
-  await allure.story('Flaky test triage');
+  await allure.story('BOOK-TEST-UI-002 - Flaky test triage');
   await allure.parameter('seed', String(teachingData.flakySeed));
 
   const playground = new PlaygroundPage(page);

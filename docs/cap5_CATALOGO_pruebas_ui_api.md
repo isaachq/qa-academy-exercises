@@ -34,7 +34,7 @@ El catálogo completo pertenece al repositorio, no a las páginas de Word. El ca
 
 Cada uno de los tres frameworks principales mostrará tres pruebas completas:
 
-1. **UI estándar — trazabilidad de compra del producto (`BOOK-UI-TRACE-001`)**
+1. **UI estándar — trazabilidad de compra del producto (`BOOK-TEST-UI-001`)**
    - preparar sesión mediante fixture;
    - buscar un producto y guardar su stock inicial;
    - abrir el tracker y comprobar stock, unidades apartadas y unidades disponibles;
@@ -47,13 +47,13 @@ Cada uno de los tres frameworks principales mostrará tres pruebas completas:
    - comprobar orden, fecha, cliente, cantidad, precio unitario, total de línea, estado y pago;
    - validar que el stock final corresponde a las unidades compradas;
    - utilizar Page Objects y cleanup.
-2. **UI avanzada — flaky test reproducible (`BOOK-UI-FLAKY-001`)**
+2. **UI avanzada — flaky test reproducible (`BOOK-TEST-UI-002`)**
    - abrir el formulario de flakiness de Playground;
    - fijar una seed conocida;
    - ejecutar un resultado controlado;
    - distinguir fallo del test frente a fallo simulado del producto;
    - adjuntar evidencia sin utilizar retries ciegos.
-3. **API REST estándar — ciclo de vida de producto (`BOOK-API-CRUD-001`)**
+3. **API REST estándar — ciclo de vida de producto (`BOOK-TEST-API-001`)**
    - crear un producto único;
    - consultarlo;
    - actualizarlo;
@@ -104,7 +104,7 @@ El tracker se automatizará mediante los contratos públicos:
 
 ### Ejecución desktop y mobile
 
-`BOOK-UI-TRACE-001` se ejecutará completo en dos perfiles:
+`BOOK-TEST-UI-001` se ejecutará completo en dos perfiles:
 
 - desktop Chromium;
 - mobile web emulado.

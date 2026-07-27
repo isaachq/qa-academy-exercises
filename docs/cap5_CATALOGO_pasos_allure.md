@@ -24,11 +24,11 @@ cualquier entrada de este documento.
 
 ## Títulos de prueba
 
-| Escenario | Título |
-|---|---|
-| UI trazabilidad | `Product purchase traceability from store stock to paid order history` |
-| UI playground | `Playground flakiness reproduced with a fixed seed` |
-| API CRUD | `Product CRUD lifecycle with guaranteed cleanup` |
+| ID | Escenario | Título |
+|---|---|---|
+| `BOOK-TEST-UI-001` | UI trazabilidad | `[BOOK-TEST-UI-001] Product purchase traceability from store stock to paid order history` |
+| `BOOK-TEST-UI-002` | UI playground | `[BOOK-TEST-UI-002] Playground flakiness reproduced with a fixed seed` |
+| `BOOK-TEST-API-001` | API CRUD | `[BOOK-TEST-API-001] Product CRUD lifecycle with guaranteed cleanup` |
 
 ## Pasos de escenario
 

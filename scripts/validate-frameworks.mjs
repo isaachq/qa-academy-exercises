@@ -14,6 +14,33 @@ const scenarios = [
   ['tests/ui', 'playground_flaky'],
   ['tests/api', 'product_crud'],
 ];
+const scenarioFiles = {
+  'python-playwright': {
+    product_purchase_traceability: 'tests/ui/test_product_purchase_traceability.py',
+    playground_flaky: 'tests/ui/test_playground_flaky.py',
+    product_crud: 'tests/api/test_product_crud.py',
+  },
+  'typescript-playwright': {
+    product_purchase_traceability: 'tests/ui/product_purchase_traceability.spec.ts',
+    playground_flaky: 'tests/ui/playground_flaky.spec.ts',
+    product_crud: 'tests/api/product_crud.spec.ts',
+  },
+  'java-selenium-rest-assured': {
+    product_purchase_traceability: 'tests/ui/ProductPurchaseTraceabilityTest.java',
+    playground_flaky: 'tests/ui/PlaygroundFlakyTest.java',
+    product_crud: 'tests/api/ProductCrudTest.java',
+  },
+  'typescript-cypress': {
+    product_purchase_traceability: 'tests/ui/product_purchase_traceability.spec.ts',
+    playground_flaky: 'tests/ui/playground_flaky.spec.ts',
+    product_crud: 'tests/api/product_crud.spec.ts',
+  },
+};
+const storyLabels = {
+  product_purchase_traceability: 'BOOK-TEST-UI-001 - Product purchase traceability',
+  playground_flaky: 'BOOK-TEST-UI-002 - Flaky test triage',
+  product_crud: 'BOOK-TEST-API-001 - Product CRUD',
+};
 
 /**
  * The step catalog every framework must declare so the four Allure reports show the
@@ -27,9 +54,9 @@ const stepCatalogFiles = {
 };
 
 const titles = [
-  'Product purchase traceability from store stock to paid order history',
-  'Playground flakiness reproduced with a fixed seed',
-  'Product CRUD lifecycle with guaranteed cleanup',
+  '[BOOK-TEST-UI-001] Product purchase traceability from store stock to paid order history',
+  '[BOOK-TEST-UI-002] Playground flakiness reproduced with a fixed seed',
+  '[BOOK-TEST-API-001] Product CRUD lifecycle with guaranteed cleanup',
 ];
 
 const scenarioSteps = [
@@ -106,6 +133,12 @@ for (const project of projects) {
     const manifest = join(base, directory, '.scenario-manifest');
     if (!existsSync(manifest) || !readFileSync(manifest, 'utf8').split(/\r?\n/).includes(scenario)) {
       failures.push(`${project}: ${scenario} is not registered in ${directory}`);
+    }
+
+    const testPath = join(base, scenarioFiles[project][scenario]);
+    const source = existsSync(testPath) ? readFileSync(testPath, 'utf8') : '';
+    if (!source.includes(storyLabels[scenario])) {
+      failures.push(`${project}: ${scenario} does not declare its shared Allure story`);
     }
   }
 

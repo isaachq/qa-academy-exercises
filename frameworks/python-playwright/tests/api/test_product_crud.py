@@ -9,7 +9,7 @@ from services.product_service import ProductService
 
 @allure.epic("Chapter 5")
 @allure.feature("REST API")
-@allure.story("Product CRUD")
+@allure.story("BOOK-TEST-API-001 - Product CRUD")
 @allure.title(Titles.PRODUCT_CRUD)
 @pytest.mark.api
 def test_creates_reads_updates_and_deletes_a_product(product_service: ProductService) -> None:

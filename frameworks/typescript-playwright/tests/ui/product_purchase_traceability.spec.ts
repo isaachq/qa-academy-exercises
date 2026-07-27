@@ -11,7 +11,7 @@ import type { Product } from '../../services/product_service.js';
 test(TITLES.productPurchaseTraceability, async ({ page, productService }, testInfo) => {
   await allure.epic('Chapter 5');
   await allure.feature('UI automation');
-  await allure.story('Product purchase traceability');
+  await allure.story('BOOK-TEST-UI-001 - Product purchase traceability');
 
   const store = new StorePage(page);
   const cart = new CartPage(page);

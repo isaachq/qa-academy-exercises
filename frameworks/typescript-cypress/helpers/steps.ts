@@ -7,9 +7,9 @@ import * as allure from 'allure-js-commons';
  */
 export const TITLES = {
   productPurchaseTraceability:
-    'Product purchase traceability from store stock to paid order history',
-  playgroundFlaky: 'Playground flakiness reproduced with a fixed seed',
-  productCrud: 'Product CRUD lifecycle with guaranteed cleanup',
+    '[BOOK-TEST-UI-001] Product purchase traceability from store stock to paid order history',
+  playgroundFlaky: '[BOOK-TEST-UI-002] Playground flakiness reproduced with a fixed seed',
+  productCrud: '[BOOK-TEST-API-001] Product CRUD lifecycle with guaranteed cleanup',
 } as const;
 
 /** Scenario level steps. One step per navigation, action or assertion block. */

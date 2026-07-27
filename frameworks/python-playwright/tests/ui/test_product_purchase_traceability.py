@@ -14,7 +14,7 @@ from services.product_service import ProductService
 
 @allure.epic("Chapter 5")
 @allure.feature("UI automation")
-@allure.story("Product purchase traceability")
+@allure.story("BOOK-TEST-UI-001 - Product purchase traceability")
 @allure.title(Titles.PRODUCT_PURCHASE_TRACEABILITY)
 @pytest.mark.ui
 @pytest.mark.parametrize("device_name", [None, "Pixel 7"], ids=["desktop", "mobile"])
