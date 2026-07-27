@@ -1,29 +1,45 @@
 import { allure } from 'allure-playwright';
 import { teachingData } from '../../data/test_data.js';
 import { test, expect } from '../../fixtures/test.js';
+import { STEPS, TITLES, step } from '../../helpers/steps.js';
 import { uniqueProductName } from '../../helpers/unique_name.js';
+import type { Product } from '../../services/product_service.js';
 
-test('creates, reads, updates and deletes a product', async ({ productService }) => {
+test(TITLES.productCrud, async ({ productService }) => {
   await allure.epic('Chapter 5');
   await allure.feature('REST API');
   await allure.story('Product CRUD');
 
-  let productId: number | undefined;
+  let created: Product | undefined;
   try {
-    const created = await productService.createProduct({
-      name: uniqueProductName('typescript-playwright'),
-      ...teachingData.product,
+    created = await step(STEPS.createProduct, () =>
+      productService.createProduct({
+        name: uniqueProductName('typescript-playwright'),
+        ...teachingData.product,
+      }),
+    );
+
+    await step(STEPS.assertCreatedProduct, async () => {
+      expect(created!.permissions).toBe('ALL');
     });
-    productId = created.id;
-    expect(created.permissions).toBe('ALL');
 
-    const read = await productService.getProduct(productId);
-    expect(read.name).toBe(created.name);
+    const read = await step(STEPS.readProduct, () => productService.getProduct(created!.id));
 
-    const updated = await productService.updateProduct(productId, { price: 59.95, stock: 12 });
-    expect(Number(updated.price)).toBe(59.95);
-    expect(updated.stock).toBe(12);
+    await step(STEPS.assertReadProduct, async () => {
+      expect(read.name).toBe(created!.name);
+    });
+
+    const updated = await step(STEPS.updateProduct, () =>
+      productService.updateProduct(created!.id, { price: 59.95, stock: 12 }),
+    );
+
+    await step(STEPS.assertUpdatedProduct, async () => {
+      expect(Number(updated.price)).toBe(59.95);
+      expect(updated.stock).toBe(12);
+    });
   } finally {
-    if (productId) await productService.deleteProduct(productId);
+    await step(STEPS.teardownProduct, async () => {
+      if (created) await productService.deleteProduct(created.id);
+    });
   }
 });

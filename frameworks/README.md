@@ -28,6 +28,18 @@ Every project implements the same three teaching scenarios:
 2. Reproducible Playground flakiness with a fixed seed.
 3. Product REST CRUD with guaranteed cleanup.
 
+## Shared report steps
+
+The four projects use the same test titles and the same Allure step names, declared in each
+project's `helpers` layer (`helpers/steps.py`, `helpers/steps.ts`, `helpers/Steps.java`).
+Every navigation, action and assertion is reported as its own step, and page objects and
+services emit nested steps, so a failed run points at the exact step that failed instead of
+collapsing the scenario into a single block.
+
+The catalog and the rules for changing it are in
+[`docs/cap5_CATALOGO_pasos_allure.md`](../docs/cap5_CATALOGO_pasos_allure.md).
+`npm run validate:frameworks` fails when a project stops declaring any catalog entry.
+
 All framework code, documentation, logs, test titles and Allure evidence are written in English.
 Accounts are created manually. Copy each `.env.example` to `.env` and provide the existing account
 values before running live tests.

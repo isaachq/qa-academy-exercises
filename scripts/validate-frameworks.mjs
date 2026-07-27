@@ -15,6 +15,81 @@ const scenarios = [
   ['tests/api', 'product_crud'],
 ];
 
+/**
+ * The step catalog every framework must declare so the four Allure reports show the
+ * same titles and the same step names. Documented in docs/cap5_CATALOGO_pasos_allure.md.
+ */
+const stepCatalogFiles = {
+  'python-playwright': 'helpers/steps.py',
+  'typescript-playwright': 'helpers/steps.ts',
+  'java-selenium-rest-assured': 'helpers/Steps.java',
+  'typescript-cypress': 'helpers/steps.ts',
+};
+
+const titles = [
+  'Product purchase traceability from store stock to paid order history',
+  'Playground flakiness reproduced with a fixed seed',
+  'Product CRUD lifecycle with guaranteed cleanup',
+];
+
+const scenarioSteps = [
+  'Setup: clear the shopping cart',
+  'Setup: create the product through the API',
+  'When: user opens the product in the store',
+  'Then: inventory shows full stock without reservations',
+  'When: user adds the product to the cart',
+  'Then: inventory reserves the purchased quantity',
+  'When: user opens the cart',
+  'Then: cart shows the product, quantity and subtotal',
+  'When: user proceeds to checkout',
+  'When: user places the order',
+  'When: user reopens the product in the store',
+  'Then: inventory reflects the confirmed purchase',
+  'When: user opens the order history',
+  'Then: order history shows the paid order',
+  'Then: order history modal fits the mobile viewport',
+  'Teardown: delete the order, cart and product',
+  'Given: playground is open with the fixed seed',
+  'Then: seed display confirms the fixed seed',
+  'When: user triggers the fast success scenario',
+  'Then: invoice modal confirms the seeded run',
+  'When: client creates a product',
+  'Then: created product exposes full permissions',
+  'When: client reads the product by id',
+  'Then: read product matches the created name',
+  'When: client updates price and stock',
+  'Then: updated product returns the new price and stock',
+  'Teardown: delete the product',
+];
+
+const actionSteps = [
+  'Store: open the store page',
+  'Store: search for the product',
+  'Store: read the inventory modal',
+  'Store: click add to cart and wait for the cart response',
+  'Store: verify the reserved badge',
+  'Store: open the order history modal',
+  'Store: verify the order history row',
+  'Store: verify the modal fits the mobile viewport',
+  'Cart: open the cart page',
+  'Cart: verify item, quantity and subtotal',
+  'Cart: click proceed to checkout',
+  'Checkout: fill the testing payment details',
+  'Checkout: submit the order and read the order id',
+  'Playground: open the playground with a seeded run',
+  'Playground: verify the seed display',
+  'Playground: trigger the fast success scenario',
+  'Playground: verify the invoice modal',
+  'API: DELETE /api/cart',
+  'API: POST /api/products',
+  'API: GET /api/products/{id}',
+  'API: PATCH /api/products/{id}',
+  'API: DELETE /api/products/{id}',
+  'API: DELETE /api/orders/{id}',
+];
+
+const catalog = [...titles, ...scenarioSteps, ...actionSteps];
+
 const failures = [];
 for (const project of projects) {
   const base = join(root, 'frameworks', project);
@@ -33,6 +108,20 @@ for (const project of projects) {
       failures.push(`${project}: ${scenario} is not registered in ${directory}`);
     }
   }
+
+  const catalogPath = join(base, stepCatalogFiles[project]);
+  if (!existsSync(catalogPath)) {
+    failures.push(`${project}: missing step catalog ${stepCatalogFiles[project]}`);
+    continue;
+  }
+
+  // Java wraps long literals across lines, so compare against the concatenated source.
+  const declared = readFileSync(catalogPath, 'utf8').replace(/"\s*\+\s*\n\s*"/g, '');
+  for (const entry of catalog) {
+    if (!declared.includes(entry)) {
+      failures.push(`${project}: step catalog does not declare "${entry}"`);
+    }
+  }
 }
 
 if (failures.length) {
@@ -40,4 +129,7 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('All four frameworks share the required layers and teaching scenarios.');
+console.log(
+  'All four frameworks share the required layers, teaching scenarios and the ' +
+    `${catalog.length} entry report catalog.`,
+);

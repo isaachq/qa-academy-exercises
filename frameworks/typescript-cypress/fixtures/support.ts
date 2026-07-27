@@ -1,3 +1,7 @@
+// Import order matters: the guard must register its `fail` listener before the
+// reporter registers its own, so it can sanitize the error first. Keep this
+// import above 'allure-cypress'.
+import '../helpers/report_error_guard';
 import 'allure-cypress';
 import { environment } from '../config/environment';
 

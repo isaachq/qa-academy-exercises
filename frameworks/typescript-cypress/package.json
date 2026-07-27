@@ -14,12 +14,15 @@
   "devDependencies": {
     "@babel/core": "7.29.7",
     "@babel/preset-typescript": "7.29.7",
+    "@cypress/webpack-preprocessor": "6.0.4",
     "@types/node": "^24.0.0",
     "allure-commandline": "^2.35.1",
     "allure-cypress": "3.10.2",
     "allure-js-commons": "3.10.2",
+    "babel-loader": "10.0.0",
     "cypress": "15.19.0",
     "dotenv": "17.4.2",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "webpack": "5.102.1"
   }
 }

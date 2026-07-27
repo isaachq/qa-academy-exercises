@@ -1,15 +1,32 @@
 import * as allure from 'allure-js-commons';
 import { teachingData } from '../../data/test_data';
+import { STEPS, TITLES, step } from '../../helpers/steps';
 import { PlaygroundPage } from '../../pages/playground_page';
 
 describe('Playground flaky test triage', () => {
-  it('reproduces a controlled scenario with a fixed seed', () => {
+  const playground = new PlaygroundPage();
+  const seed = teachingData.flakySeed;
+
+  it(TITLES.playgroundFlaky, () => {
     allure.epic('Chapter 5');
     allure.feature('Playground');
     allure.story('Flaky test triage');
-    allure.parameter('seed', String(teachingData.flakySeed));
-    const playground = new PlaygroundPage();
-    playground.openWithSeed(teachingData.flakySeed);
-    playground.runFastSuccess();
+    allure.parameter('seed', String(seed));
+
+    step(STEPS.openPlayground, () => {
+      playground.openWithSeed(seed);
+    });
+
+    step(STEPS.assertSeed, () => {
+      playground.expectSeed(seed);
+    });
+
+    step(STEPS.triggerFastSuccess, () => {
+      playground.triggerFastSuccess();
+    });
+
+    step(STEPS.assertInvoiceModal, () => {
+      playground.expectInvoiceModal(seed);
+    });
   });
 });
