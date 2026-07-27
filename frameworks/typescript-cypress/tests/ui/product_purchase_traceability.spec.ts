@@ -56,8 +56,9 @@ describe('Product purchase traceability', () => {
       });
       store.openOrderHistory(product!.id, orderId!);
       cy.get(`[data-testid="order-history-row-${orderId}"]`)
-        .should('contain.text', teachingData.purchaseQuantity)
-        .and('contain.text', 'paid');
+        .invoke('text')
+        .should('include', String(teachingData.purchaseQuantity))
+        .and('include', 'paid');
     });
   });
 });
