@@ -48,9 +48,9 @@ export class StorePage {
       expect(rect.top).to.be.at.least(0);
       expect(rect.height).to.be.at.most(Cypress.config('viewportHeight'));
       expect(getComputedStyle($modal[0]).overflowY).to.eq('auto');
-      expect(backdrop).not.to.eq(null);
-      expect(getComputedStyle(backdrop!).position).to.eq('fixed');
-      expect(backdrop!.contains(document.elementFromPoint(1, 1))).to.eq(true);
+      if (!backdrop) throw new Error('Order history backdrop was not found');
+      expect(getComputedStyle(backdrop).position).to.eq('fixed');
+      expect(backdrop.contains(document.elementFromPoint(1, 1))).to.eq(true);
     });
     cy.get('[data-testid="order-history-close"]').should('be.visible').click();
     cy.get('[data-testid="order-history-modal"]').should('not.exist');
