@@ -440,13 +440,14 @@ publicarlos.
 ## 13. Política de código y publicación
 
 - El libro explica; el repositorio completa.
-- El libro mostrará completos sólo un test UI estándar y un test API estándar por framework
-  principal.
+- El libro mostrará completos dos tests UI y un test API REST por framework principal.
 - UI estándar: Store → agregar producto → verificar carrito y subtotal.
+- UI avanzada: Playground flaky test con seed reproducible, diagnóstico y evidencia sin retry ciego.
 - API estándar: ciclo create/get/update/delete de un producto propio, con cleanup.
-- Cypress comparará esos dos casos mediante fragmentos breves; no repetirá dos archivos completos.
-- QUERY, GraphQL, Shadow DOM, flakiness, móvil y evidencia aparecerán como fragmentos técnicos con
-  enlace a su implementación completa.
+- Cypress implementará los mismos tres tests y la misma estructura; el libro comparará sus
+  diferencias mediante fragmentos breves y no repetirá tres archivos completos.
+- QUERY, GraphQL, Shadow DOM y móvil aparecerán como fragmentos técnicos con enlace a su
+  implementación completa.
 - No repetir bloques casi idénticos cuando una abstracción pequeña comunica mejor la idea.
 - No crear wrappers que sólo renombren una llamada sin aportar contrato o intención.
 - Evitar clases base gigantes y helpers genéricos sin responsabilidad clara.
@@ -461,9 +462,10 @@ publicarlos.
 El capítulo contendrá:
 
 - configuración esencial de Python, TypeScript y Java;
-- seis archivos de prueba completos: tres UI y tres API;
+- nueve archivos de prueba completos: seis UI y tres API;
 - árboles de carpetas y fragmentos mínimos de Page Objects, Service Objects y fixtures;
-- una comparación breve de Cypress;
+- ejecución y reporte Allure de las tres pruebas en cada framework principal;
+- una comparación breve de Cypress usando las mismas pruebas;
 - fragmentos avanzados sólo cuando expliquen una diferencia real.
 
 El catálogo extendido podrá crecer hasta la cobertura definida en
@@ -576,7 +578,7 @@ queda trabajo de implementación del repositorio de ejercicios:
 7. incorporar Allure y comprobar que no filtra secretos;
 8. completar la demo de Cypress;
 9. verificar todos los comandos localmente y en CI;
-10. seleccionar los seis tests completos y los fragmentos avanzados;
+10. seleccionar los nueve tests completos y los fragmentos avanzados;
 11. comenzar la escritura usando únicamente ejemplos que ya compilan y pasan.
 
 ## 16. Criterio de “planeación terminada”
@@ -593,6 +595,6 @@ La planeación queda cerrada porque:
 - autenticación, datos, cleanup, móvil y Allure tienen enfoque común;
 - Cypress tiene la misma arquitectura y un alcance limitado;
 - cada prueba deberá ejecutarse en CI;
-- el libro tiene un presupuesto explícito de seis archivos de prueba completos;
+- el libro tiene un presupuesto explícito de nueve archivos de prueba completos;
 - el siguiente paso ya no es investigar la plataforma, sino construir
   `qa-academy-exercises/chapter-05`.
