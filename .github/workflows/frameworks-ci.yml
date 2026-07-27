@@ -161,8 +161,6 @@ jobs:
         working-directory: frameworks/typescript-cypress
         run: |
           npm ci
-          export NODE_PATH="$PWD/node_modules"
-          node -e "console.log(require.resolve('@babel/preset-typescript'))"
           rm -rf allure-results allure-results-desktop allure-results-mobile
           ALLURE_RESULTS_DIR=allure-results-desktop npm run test:desktop
           ALLURE_RESULTS_DIR=allure-results-mobile npm run test:mobile
