@@ -48,4 +48,5 @@ export class StorePage {
       .should('have.css', 'position', 'fixed');
     cy.get('[data-testid="order-history-close"]').scrollIntoView().should('be.visible').click();
     cy.get('body').find('[data-testid="order-history-modal"]').its('length').should('eq', 0);
-  }}
+  }
+}
