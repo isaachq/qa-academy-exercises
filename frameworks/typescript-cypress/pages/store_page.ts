@@ -36,7 +36,10 @@ export class StorePage {
   openOrderHistory(productId: number, orderId: number): void {
     cy.get(`[data-testid="product-order-history-${productId}"]`).click();
     cy.get('[data-testid="order-history-modal"]').should('be.visible');
-    cy.get(`[data-testid="order-history-row-${orderId}"]`).scrollIntoView().should('be.visible');
+    cy.get(`[data-testid="order-history-row-${orderId}"]`)
+      .scrollIntoView()
+      .invoke('is', ':visible')
+      .should('eq', true);
   }
 
 }
