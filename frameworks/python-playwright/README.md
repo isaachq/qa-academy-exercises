@@ -11,7 +11,7 @@ pip install -r requirements.txt
 playwright install chromium
 cp .env.example .env
 pytest
-allure generate allure-results --clean -o allure-report
+allure generate --single-file allure-results --clean -o allure-report
 ```
 
 The traceability test is parameterized for desktop and mobile without duplicating the scenario.

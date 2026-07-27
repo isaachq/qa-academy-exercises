@@ -10,7 +10,7 @@ export BASE_URL=https://qaacademyabc.xyz
 export API_KEY=replace-me
 export UI_EMAIL=replace-me@example.com
 mvn test
-allure generate target/allure-results --clean -o allure-report
+allure generate --single-file target/allure-results --clean -o allure-report
 ```
 
 Chrome is resolved by Selenium Manager. The traceability test is parameterized for desktop and
