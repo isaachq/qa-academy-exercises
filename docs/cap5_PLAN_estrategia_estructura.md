@@ -292,12 +292,14 @@ fixtures y sintaxis, pero no omitir la intención.
 
 1. Login exitoso y error controlado.
 2. Store: búsqueda, filtros y cambio de página.
-3. Agregar producto al carrito y verificar badge/resumen.
-4. Actualizar y eliminar un artículo, manejando el diálogo nativo.
-5. Checkout con validaciones negativas y datos de prueba permitidos.
-6. Crear una orden y abrir su detalle.
-7. Buscar una orden y validar estado, pago y total.
-8. Validar al menos un flujo en escritorio y en emulación móvil.
+3. Abrir el tracker del producto y registrar stock, apartados y disponibles.
+4. Agregar una cantidad conocida al carrito y validar badge, item, cantidad y subtotal.
+5. Confirmar en el tracker que aumentan los apartados y disminuyen los disponibles.
+6. Completar checkout con datos de prueba permitidos y conservar el ID de orden.
+7. Volver al producto, abrir Order History y localizar la orden creada.
+8. Validar cliente, cantidad, precio, total de línea, estado y pago para demostrar trazabilidad.
+9. Confirmar que después del checkout disminuye el stock y se libera la reserva del carrito.
+10. Ejecutar el flujo completo en escritorio y emulación móvil.
 
 ### API REST
 
@@ -359,11 +361,22 @@ La cobertura móvil será web emulada, no automatización nativa.
 
 - Playwright: proyecto móvil basado en un descriptor de dispositivo versionado en la configuración.
 - Selenium: Chrome `mobileEmulation` con métricas y user agent equivalentes documentados.
-- Los escenarios móviles se limitarán a navegación responsive y flujos donde el layout cambia:
-  Store, carrito/modal y Playground.
+- Cypress: el mismo spec se ejecutará con un viewport mobile definido en configuración.
 
-No se ejecutará toda la suite dos veces sólo para aumentar el número de pruebas. Se seleccionarán
-escenarios que realmente ejerciten comportamiento responsive.
+La emulación móvil es contenido completo del libro. No se presentará como fragmento opcional. El
+caso `test_product_purchase_traceability` se ejecutará sin cambios de intención en desktop y mobile.
+La configuración del runner será la responsable de elegir el perfil.
+
+Además de las assertions funcionales, el perfil móvil comprobará:
+
+- Store, tracker, carrito, checkout e historial utilizables en viewport pequeño;
+- modal por encima del header, navegación y contenido;
+- botón de cierre visible, alcanzable y no recortado;
+- panel dentro del viewport y scroll interno para historiales largos;
+- backdrop bloqueando interacción con la página inferior.
+
+Playground podrá aportar ejercicios responsive adicionales, pero no será necesario duplicar toda
+la suite en móvil. La cobertura móvil se justificará por cambios reales de layout.
 
 ## 10. Allure como contrato de evidencia
 
@@ -441,13 +454,13 @@ publicarlos.
 
 - El libro explica; el repositorio completa.
 - El libro mostrará completos dos tests UI y un test API REST por framework principal.
-- UI estándar: Store → agregar producto → verificar carrito y subtotal.
+- UI estándar: producto → tracker → carrito → checkout → historial y trazabilidad.
 - UI avanzada: Playground flaky test con seed reproducible, diagnóstico y evidencia sin retry ciego.
 - API estándar: ciclo create/get/update/delete de un producto propio, con cleanup.
 - Cypress implementará los mismos tres tests y la misma estructura; el libro comparará sus
   diferencias mediante fragmentos breves y no repetirá tres archivos completos.
-- QUERY, GraphQL, Shadow DOM y móvil aparecerán como fragmentos técnicos con enlace a su
-  implementación completa.
+- QUERY, GraphQL y Shadow DOM aparecerán como fragmentos técnicos con enlace a su implementación
+  completa. Mobile se explicará y ejecutará de forma completa.
 - No repetir bloques casi idénticos cuando una abstracción pequeña comunica mejor la idea.
 - No crear wrappers que sólo renombren una llamada sin aportar contrato o intención.
 - Evitar clases base gigantes y helpers genéricos sin responsabilidad clara.
@@ -464,6 +477,7 @@ El capítulo contendrá:
 - configuración esencial de Python, TypeScript y Java;
 - nueve archivos de prueba completos: seis UI y tres API;
 - árboles de carpetas y fragmentos mínimos de Page Objects, Service Objects y fixtures;
+- configuración completa de ejecución desktop/mobile para el mismo flujo de trazabilidad;
 - ejecución y reporte Allure de las tres pruebas en cada framework principal;
 - una comparación breve de Cypress usando las mismas pruebas;
 - fragmentos avanzados sólo cuando expliquen una diferencia real.
