@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -53,13 +52,15 @@ public final class StorePage extends BasePage {
     public void assertMobileModalContract() {
         WebElement modal = visible("order-history-modal");
         Rectangle rect = modal.getRect();
-        Dimension viewport = driver.manage().window().getSize();
-        if (rect.getX() < 0 || rect.getY() < 0
-                || rect.getX() + rect.getWidth() > viewport.getWidth()
-                || rect.getHeight() > viewport.getHeight()) {
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        long viewportWidth = ((Number) js.executeScript("return window.innerWidth")).longValue();
+        long viewportHeight = ((Number) js.executeScript("return window.innerHeight")).longValue();
+        if (rect.getX() < 0
+                || rect.getX() + rect.getWidth() > viewportWidth
+                || rect.getHeight() > viewportHeight) {
             throw new AssertionError("Order history modal is clipped on mobile");
         }
-        Boolean backdropOwnsHitTarget = (Boolean) ((JavascriptExecutor) driver).executeScript(
+        Boolean backdropOwnsHitTarget = (Boolean) js.executeScript(
                 "const modal=arguments[0], backdrop=modal.parentElement;"
                         + "return getComputedStyle(backdrop).position==='fixed'"
                         + " && getComputedStyle(modal).overflowY==='auto'"
