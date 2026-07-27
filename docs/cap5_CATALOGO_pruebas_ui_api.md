@@ -26,34 +26,71 @@ El catálogo completo pertenece al repositorio, no a las páginas de Word. El ca
 
 ### Archivos de prueba completos
 
-Cada uno de los tres frameworks principales mostrará dos pruebas completas:
+Cada uno de los tres frameworks principales mostrará tres pruebas completas:
 
-1. **UI estándar — Store → carrito**
+1. **UI estándar — Store → carrito (`BOOK-UI-CART-001`)**
    - preparar sesión mediante fixture;
    - buscar un producto;
    - agregarlo al carrito;
    - comprobar item, cantidad y subtotal;
    - utilizar Page Objects.
-2. **API estándar — ciclo de vida de producto**
+2. **UI avanzada — flaky test reproducible (`BOOK-UI-FLAKY-001`)**
+   - abrir el formulario de flakiness de Playground;
+   - fijar una seed conocida;
+   - ejecutar un resultado controlado;
+   - distinguir fallo del test frente a fallo simulado del producto;
+   - adjuntar evidencia sin utilizar retries ciegos.
+3. **API REST estándar — ciclo de vida de producto (`BOOK-API-CRUD-001`)**
    - crear un producto único;
    - consultarlo;
    - actualizarlo;
    - eliminarlo en cleanup;
    - utilizar un Service Object.
 
-Esto produce **seis archivos de prueba completos en el libro**:
+Esto produce **nueve archivos de prueba completos en el libro**:
 
-| Framework | UI completo | API completo |
-|---|---|---|
-| Python | Store → carrito | Product lifecycle |
-| TypeScript | Store → carrito | Product lifecycle |
-| Java | Store → carrito | Product lifecycle |
+| Framework | UI carrito | UI flaky | API CRUD |
+|---|---|---|---|
+| Python | Completo | Completo | Completo |
+| TypeScript | Completo | Completo | Completo |
+| Java | Completo | Completo | Completo |
+
+Los nombres de archivo conservarán el mismo significado:
+
+```text
+tests/ui/test_store_cart.*
+tests/ui/test_playground_flaky.*
+tests/api/test_product_crud.*
+```
+
+Cada lenguaje adaptará únicamente su extensión y convención de naming.
+
+### Configuración y reportes incluidos
+
+Antes de las pruebas, el libro mostrará para cada framework principal:
+
+- dependencias y runner;
+- variables de entorno;
+- configuración de navegador/API;
+- fixtures de autenticación y cleanup;
+- configuración de Allure;
+- comando local;
+- comando utilizado por CI.
+
+Después de ejecutar las tres pruebas, se mostrará el reporte Allure con:
+
+- epic, feature y story equivalentes;
+- pasos de setup, test y teardown;
+- screenshot del fallo UI;
+- request/response redactados del CRUD;
+- seed y evidencia del flaky test;
+- resultado de cleanup.
 
 ### Cypress en el libro
 
-Cypress tendrá la misma estructura en el repositorio. En Word se mostrará una comparación compacta
-del mismo caso UI y del mismo caso API, resaltando únicamente las diferencias de sintaxis y runner.
-No se repetirán dos archivos completos adicionales.
+Cypress tendrá la misma estructura y las mismas tres pruebas en el repositorio. En Word se mostrará
+una comparación compacta de carrito, flaky test y CRUD, resaltando únicamente las diferencias de
+sintaxis, runner y reporte. No se repetirán tres archivos completos adicionales.
 
 ### Técnicas mostradas como fragmentos
 
@@ -62,7 +99,6 @@ Los siguientes temas requieren explicación, pero no otro archivo completo por l
 - QUERY nativo y POST override;
 - GraphQL con `data` y `errors`;
 - Shadow DOM;
-- flakiness con seed reproducible;
 - Allure request/response y screenshot;
 - emulación móvil.
 
@@ -72,8 +108,9 @@ dirigirá al lector a la implementación completa en `qa-academy-exercises`.
 ### Presupuesto editorial
 
 - 3 configuraciones principales explicadas.
-- 6 archivos de prueba completos.
-- Cypress como comparación breve.
+- 9 archivos de prueba completos.
+- Configuración y reporte de los tres frameworks principales.
+- Cypress como comparación breve de las mismas tres pruebas.
 - Fragmentos avanzados seleccionados.
 - Ninguna impresión del catálogo completo.
 
@@ -247,7 +284,7 @@ quedar conectada a CI.
 
 1. Crear la estructura idéntica de responsabilidades en los cuatro proyectos.
 2. Configurar smoke test, variables, redacción de secretos, Allure y CI.
-3. Implementar primero los dos casos que aparecerán en el libro.
+3. Implementar primero los tres casos que aparecerán en el libro.
 4. Implementar TypeScript/Playwright como referencia para la cobertura extendida.
 5. Implementar Python conservando intención, no traducción literal.
 6. Implementar Java respetando Maven, Selenium y REST Assured.
@@ -267,7 +304,8 @@ quedar conectada a CI.
 - Las pruebas de registro y certificación permanecen fuera de alcance.
 - MCP permanece en el capítulo de IA.
 - Ninguna prueba se considera terminada hasta ejecutarse en CI.
-- El libro imprime seis tests completos, no el catálogo extendido.
+- El libro imprime nueve tests completos, no el catálogo extendido.
+- Cypress implementa los mismos tres tests editoriales, pero se presenta como demo.
 
 ## 8. Único checkpoint antes de programar
 
