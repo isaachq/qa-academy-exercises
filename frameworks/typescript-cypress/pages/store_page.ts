@@ -69,9 +69,15 @@ export class StorePage {
 
   expectOrderRow(orderId: number, quantity: number, status: string): void {
     step(ACTIONS.storeVerifyOrderRow, () => {
+      // Inside a scrollable modal, chai-jquery's be.visible fails because it considers the
+      // element clipped by the overflow container.  Use jQuery's :visible predicate (which
+      // only requires non-zero dimensions) and then assert text on the same element —
+      // matching the behaviour of the previous openOrderHistory implementation.
       cy.get(`[data-testid="order-history-row-${orderId}"]`)
         .scrollIntoView()
-        .should('be.visible')
+        .invoke('is', ':visible')
+        .should('eq', true);
+      cy.get(`[data-testid="order-history-row-${orderId}"]`)
         .invoke('text')
         .should('include', String(quantity))
         .and('include', status);

@@ -55,10 +55,20 @@ public final class StorePage extends BasePage {
 
     public void expectReserved(int id, int expectedReserved) {
         Steps.step(Steps.Actions.STORE_VERIFY_RESERVED, () -> {
-            wait.until(driver -> driver.findElement(testId("product-stock-info-" + id))
-                    .findElement(org.openqa.selenium.By.xpath(".."))
-                    .getText()
-                    .contains("Reserved: " + expectedReserved));
+            // Use textContent (all DOM text regardless of CSS visibility) so that the check
+            // matches Playwright's toContainText behaviour on mobile layouts where the
+            // reserved-count node may be CSS-hidden until the cart API responds.
+            wait.until(d -> {
+                try {
+                    String text = (String) ((JavascriptExecutor) d)
+                            .executeScript("return arguments[0].textContent",
+                                    d.findElement(testId("product-stock-info-" + id))
+                                     .findElement(org.openqa.selenium.By.xpath("..")));
+                    return text != null && text.contains("Reserved: " + expectedReserved);
+                } catch (org.openqa.selenium.StaleElementReferenceException e) {
+                    return false;
+                }
+            });
         });
     }
 
