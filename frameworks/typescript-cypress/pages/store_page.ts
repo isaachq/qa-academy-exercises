@@ -39,16 +39,4 @@ export class StorePage {
     cy.get(`[data-testid="order-history-row-${orderId}"]`).scrollIntoView().should('be.visible');
   }
 
-  assertMobileModalContract(): void {
-    cy.get('[data-testid="order-history-modal"]').should('be.visible');
-    cy.get('[data-testid="order-history-modal"]')
-      .invoke('css', 'overflow-y')
-      .should('eq', 'auto');
-    cy.get('[data-testid="order-history-modal"]')
-      .parent()
-      .invoke('css', 'position')
-      .should('eq', 'fixed');
-    cy.get('[data-testid="order-history-close"]').scrollIntoView().should('be.visible').click();
-    cy.get('body').find('[data-testid="order-history-modal"]').its('length').should('eq', 0);
-  }
 }
