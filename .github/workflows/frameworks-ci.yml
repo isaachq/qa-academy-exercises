@@ -161,6 +161,8 @@ jobs:
         working-directory: frameworks/typescript-cypress
         run: |
           npm ci
+          export NODE_PATH="$PWD/node_modules"
+          node -e "console.log(require.resolve('@babel/preset-typescript'))"
           npm run test:desktop
           npm run test:mobile
       - name: Setup Python
