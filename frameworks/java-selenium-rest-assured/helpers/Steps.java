@@ -14,10 +14,11 @@ public final class Steps {
     /** Canonical test titles. */
     public static final class Titles {
         public static final String PRODUCT_PURCHASE_TRACEABILITY =
-                "Product purchase traceability from store stock to paid order history";
+                "[BOOK-TEST-UI-001] Product purchase traceability from store stock to paid order history";
         public static final String PLAYGROUND_FLAKY =
-                "Playground flakiness reproduced with a fixed seed";
-        public static final String PRODUCT_CRUD = "Product CRUD lifecycle with guaranteed cleanup";
+                "[BOOK-TEST-UI-002] Playground flakiness reproduced with a fixed seed";
+        public static final String PRODUCT_CRUD =
+                "[BOOK-TEST-API-001] Product CRUD lifecycle with guaranteed cleanup";
 
         private Titles() {}
     }

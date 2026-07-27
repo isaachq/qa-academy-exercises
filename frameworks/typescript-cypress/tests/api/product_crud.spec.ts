@@ -28,7 +28,7 @@ describe('REST product CRUD', () => {
   it(TITLES.productCrud, () => {
     allure.epic('Chapter 5');
     allure.feature('REST API');
-    allure.story('Product CRUD');
+    allure.story('BOOK-TEST-API-001 - Product CRUD');
 
     step(STEPS.createProduct, () => {
       service

@@ -10,7 +10,7 @@ describe('Playground flaky test triage', () => {
   it(TITLES.playgroundFlaky, () => {
     allure.epic('Chapter 5');
     allure.feature('Playground');
-    allure.story('Flaky test triage');
+    allure.story('BOOK-TEST-UI-002 - Flaky test triage');
     allure.parameter('seed', String(seed));
 
     step(STEPS.openPlayground, () => {

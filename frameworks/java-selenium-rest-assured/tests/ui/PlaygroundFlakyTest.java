@@ -13,7 +13,7 @@ import pages.PlaygroundPage;
 
 @Epic("Chapter 5")
 @Feature("Playground")
-@Story("Flaky test triage")
+@Story("BOOK-TEST-UI-002 - Flaky test triage")
 class PlaygroundFlakyTest {
     @Test
     @DisplayName(Steps.Titles.PLAYGROUND_FLAKY)

@@ -13,10 +13,10 @@ class Titles:
     """Canonical test titles."""
 
     PRODUCT_PURCHASE_TRACEABILITY = (
-        "Product purchase traceability from store stock to paid order history"
+        "[BOOK-TEST-UI-001] Product purchase traceability from store stock to paid order history"
     )
-    PLAYGROUND_FLAKY = "Playground flakiness reproduced with a fixed seed"
-    PRODUCT_CRUD = "Product CRUD lifecycle with guaranteed cleanup"
+    PLAYGROUND_FLAKY = "[BOOK-TEST-UI-002] Playground flakiness reproduced with a fixed seed"
+    PRODUCT_CRUD = "[BOOK-TEST-API-001] Product CRUD lifecycle with guaranteed cleanup"
 
 
 class Steps:

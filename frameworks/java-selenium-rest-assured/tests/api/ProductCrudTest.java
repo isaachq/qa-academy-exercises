@@ -15,7 +15,7 @@ import services.ProductService;
 
 @Epic("Chapter 5")
 @Feature("REST API")
-@Story("Product CRUD")
+@Story("BOOK-TEST-API-001 - Product CRUD")
 class ProductCrudTest {
     @Test
     @DisplayName(Steps.Titles.PRODUCT_CRUD)

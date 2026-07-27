@@ -8,7 +8,7 @@ import type { Product } from '../../services/product_service.js';
 test(TITLES.productCrud, async ({ productService }) => {
   await allure.epic('Chapter 5');
   await allure.feature('REST API');
-  await allure.story('Product CRUD');
+  await allure.story('BOOK-TEST-API-001 - Product CRUD');
 
   let created: Product | undefined;
   try {

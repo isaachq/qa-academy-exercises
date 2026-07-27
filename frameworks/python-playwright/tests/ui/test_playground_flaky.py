@@ -9,7 +9,7 @@ from pages.playground_page import PlaygroundPage
 
 @allure.epic("Chapter 5")
 @allure.feature("Playground")
-@allure.story("Flaky test triage")
+@allure.story("BOOK-TEST-UI-002 - Flaky test triage")
 @allure.title(Titles.PLAYGROUND_FLAKY)
 @pytest.mark.ui
 def test_reproduces_a_controlled_scenario_with_a_fixed_seed(authenticated_page: Page) -> None:

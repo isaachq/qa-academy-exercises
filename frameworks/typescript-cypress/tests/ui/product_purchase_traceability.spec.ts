@@ -37,7 +37,7 @@ describe('Product purchase traceability', () => {
   it(TITLES.productPurchaseTraceability, () => {
     allure.epic('Chapter 5');
     allure.feature('UI automation');
-    allure.story('Product purchase traceability');
+    allure.story('BOOK-TEST-UI-001 - Product purchase traceability');
 
     step(STEPS.setupClearCart, () => {
       service.clearCart();

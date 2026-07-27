@@ -24,9 +24,9 @@ config
 
 Every project implements the same three teaching scenarios:
 
-1. Product purchase traceability on desktop and mobile web.
-2. Reproducible Playground flakiness with a fixed seed.
-3. Product REST CRUD with guaranteed cleanup.
+1. `BOOK-TEST-UI-001` — Product purchase traceability on desktop and mobile web.
+2. `BOOK-TEST-UI-002` — Reproducible Playground flakiness with a fixed seed.
+3. `BOOK-TEST-API-001` — Product REST CRUD with guaranteed cleanup.
 
 ## Shared report steps
 
