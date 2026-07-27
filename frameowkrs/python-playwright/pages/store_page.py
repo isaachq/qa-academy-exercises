@@ -32,8 +32,16 @@ class StorePage:
         self.page.get_by_test_id("stock-info-close").click()
         return inventory
 
-    def add_to_cart(self, product_id: int) -> None:
-        self.page.get_by_test_id(f"product-add-to-cart-{product_id}").click()
+    def add_to_cart(self, product_id: int, expected_reserved: int = 1) -> None:
+        with self.page.expect_response(
+            lambda response: response.request.method == "POST"
+            and response.url.split("?")[0].endswith("/api/cart")
+        ) as response_info:
+            self.page.get_by_test_id(f"product-add-to-cart-{product_id}").click()
+        assert response_info.value.ok
+        expect(
+            self.page.get_by_test_id(f"product-stock-info-{product_id}").locator("..")
+        ).to_contain_text(f"Reserved: {expected_reserved}")
 
     def open_order_history(self, product_id: int, order_id: int) -> None:
         self.page.get_by_test_id(f"product-order-history-{product_id}").click()

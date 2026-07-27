@@ -175,7 +175,7 @@ jobs:
       - name: Run Java scenarios
         if: matrix.framework == 'java-selenium-rest-assured'
         working-directory: frameowkrs/java-selenium-rest-assured
-        run: mvn --batch-mode test
+        run: mvn --batch-mode --errors test
       - name: Generate Allure report
         if: always()
         working-directory: frameowkrs/${{ matrix.framework }}
@@ -204,6 +204,13 @@ jobs:
         with:
           name: allure-report-${{ matrix.framework }}
           path: frameowkrs/${{ matrix.framework }}/allure-report
+          if-no-files-found: warn
+      - name: Upload Java Surefire diagnostics
+        if: always() && matrix.framework == 'java-selenium-rest-assured'
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-${{ matrix.framework }}
+          path: frameowkrs/java-selenium-rest-assured/target/surefire-reports
           if-no-files-found: warn
       - name: Publish run summary
         if: always()

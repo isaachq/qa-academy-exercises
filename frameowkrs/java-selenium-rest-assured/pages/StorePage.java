@@ -36,7 +36,13 @@ public final class StorePage extends BasePage {
         return Integer.parseInt(match.group(1));
     }
 
-    public void addToCart(int id) { visible("product-add-to-cart-" + id).click(); }
+    public void addToCart(int id) {
+        visible("product-add-to-cart-" + id).click();
+        wait.until(driver -> driver.findElement(testId("product-stock-info-" + id))
+                .findElement(org.openqa.selenium.By.xpath(".."))
+                .getText()
+                .contains("Reserved: 1"));
+    }
 
     public WebElement openOrderHistory(int productId, int orderId) {
         visible("product-order-history-" + productId).click();

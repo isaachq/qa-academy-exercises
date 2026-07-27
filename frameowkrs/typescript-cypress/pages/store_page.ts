@@ -25,8 +25,13 @@ export class StorePage {
     });
   }
 
-  addToCart(productId: number): void {
+  addToCart(productId: number, expectedReserved = 1): void {
+    cy.intercept('POST', '/api/cart').as('addToCart');
     cy.get(`[data-testid="product-add-to-cart-${productId}"]`).click();
+    cy.wait('@addToCart').its('response.statusCode').should('be.oneOf', [200, 201]);
+    cy.get(`[data-testid="product-stock-info-${productId}"]`)
+      .parent()
+      .should('contain.text', `Reserved: ${expectedReserved}`);
   }
 
   openOrderHistory(productId: number, orderId: number): void {

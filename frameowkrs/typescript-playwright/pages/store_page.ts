@@ -28,8 +28,18 @@ export class StorePage {
     return values;
   }
 
-  async addToCart(productId: number): Promise<void> {
+  async addToCart(productId: number, expectedReserved = 1): Promise<void> {
+    const responsePromise = this.page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/api/cart' &&
+        response.request().method() === 'POST',
+    );
     await this.page.getByTestId(`product-add-to-cart-${productId}`).click();
+    const response = await responsePromise;
+    expect(response.ok()).toBeTruthy();
+    await expect(this.page.getByTestId(`product-stock-info-${productId}`).locator('..')).toContainText(
+      `Reserved: ${expectedReserved}`,
+    );
   }
 
   async openOrderHistory(productId: number, orderId: number): Promise<void> {
