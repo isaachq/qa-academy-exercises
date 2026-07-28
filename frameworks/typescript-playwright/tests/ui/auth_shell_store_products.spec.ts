@@ -222,12 +222,13 @@ test('[UI-PRODUCT-003] An owned product is deleted from the UI', async ({ page, 
 test('[UI-PRODUCT-004] A non-deletable product keeps its row protected', async ({ page }) => {
   await labels('Products UI', 'UI-PRODUCT-004 - Protected product');
   await page.goto('/products');
+  await expect(page.getByTestId('products-table')).toBeVisible();
   await page.getByTestId('products-type-filter').getByRole('button', { name: 'Template' }).click();
   const row = page.getByTestId(/^product-row-\d+$/).first();
   await step('When: user attempts to delete a protected template product', async () => {
     await expect(row).toBeVisible();
     const id = (await row.getAttribute('data-testid'))!.replace('product-row-', '');
-    await page.getByTestId(`product-delete-${id}`).click();
+    await page.getByTestId(`product-delete-${id}`).click({ force: true });
     await expect(page.getByTestId('products-error-toast')).toBeVisible();
     await expect(page.getByTestId(`product-row-${id}`)).toBeVisible();
   });

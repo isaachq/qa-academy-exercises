@@ -112,3 +112,4 @@ Playwright one. The assertions are the same; only the mechanism changes.
   download event, so the spec reads the folder through a Node task.
 - **Order pagination** (`UI-ORDER-003`): the eleven orders the page must paginate are stubbed with
   `cy.intercept`, exactly as the Playwright project stubs them with `page.route`.
+  .

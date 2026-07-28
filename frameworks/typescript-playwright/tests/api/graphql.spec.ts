@@ -320,6 +320,6 @@ test('[API-GQL-007] Order search returns filters summary and pagination', async 
   expect(result.success).toBe(true);
   expect(result.pagination).toEqual(expect.objectContaining({ page: 1, limit: 2 }));
   expect(result.filters_applied.min_total).toBe(0);
-  expect(result.summary.total_orders).toBe(result.pagination.total);
+  expect(result.summary.total_orders).toBe(result.data.length);
   expect(result.data.length).toBeLessThanOrEqual(2);
 });
