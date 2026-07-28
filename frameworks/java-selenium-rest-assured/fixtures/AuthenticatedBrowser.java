@@ -12,6 +12,10 @@ public final class AuthenticatedBrowser {
     private AuthenticatedBrowser() {}
 
     public static WebDriver create(boolean mobile) {
+        return create(mobile, true);
+    }
+
+    public static WebDriver create(boolean mobile, boolean authenticated) {
         ChromeOptions options = new ChromeOptions();
         options.setPageLoadStrategy(PageLoadStrategy.EAGER);
         options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
@@ -32,11 +36,15 @@ public final class AuthenticatedBrowser {
         }
         driver.get(Environment.BASE_URL);
         JavascriptExecutor js = (JavascriptExecutor) driver;
-        js.executeScript(
-                "localStorage.setItem('api_token', arguments[0]);"
-                        + "localStorage.setItem('user_email', arguments[1]);"
-                        + "localStorage.setItem('qa-academy-terms-consent-v1', 'accepted');",
-                Environment.required("API_KEY"), Environment.required("UI_EMAIL"));
+        js.executeScript("localStorage.setItem('qa-academy-terms-consent-v1', 'accepted')");
+        if (authenticated) {
+            js.executeScript(
+                    "localStorage.setItem('api_token', arguments[0]);"
+                            + "localStorage.setItem('user_email', arguments[1]);",
+                    Environment.required("API_KEY"), Environment.required("UI_EMAIL"));
+        } else {
+            js.executeScript("localStorage.removeItem('api_token');localStorage.removeItem('user_email')");
+        }
         return driver;
     }
 }

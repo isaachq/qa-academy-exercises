@@ -42,6 +42,7 @@ const executableProjects = new Set([
   'typescript-playwright',
   'typescript-cypress',
   'python-playwright',
+  'java-selenium-rest-assured',
 ]);
 /** Source extension and per-ID title pattern used to read an executable catalog. */
 const executableSources = {
@@ -57,6 +58,11 @@ const executableSources = {
     title: (id) => new RegExp(`(test|it)\\(\\s*['"\`]\\[${id}\\]`),
     markers: ['allure.feature(', 'allure.story(', 'step('],
   },
+  'java-selenium-rest-assured': {
+    extension: '.java',
+    title: (id) => new RegExp(`@DisplayName\\(\\s*['"]\\[${id}\\]`),
+    markers: ['@Feature(', '@Story(', 'Steps.step('],
+  },
   'python-playwright': {
     extension: '.py',
     // pytest takes the reported name from the `@allure.title` decorator.
@@ -64,9 +70,7 @@ const executableSources = {
     markers: ['allure.feature(', 'allure.story(', 'step('],
   },
 };
-const extendedCatalogFiles = {
-  'java-selenium-rest-assured': ['data/ExtendedCatalog.java'],
-};
+const extendedCatalogFiles = {};
 const readFilesRecursively = (directory, extension) =>
   readdirSync(directory)
     .flatMap((entry) => {
