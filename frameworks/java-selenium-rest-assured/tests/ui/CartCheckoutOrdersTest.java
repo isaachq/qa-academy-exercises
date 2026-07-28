@@ -7,6 +7,7 @@ import config.Environment;
 import data.TestData;
 import fixtures.AuthenticatedBrowser;
 import helpers.Steps;
+import helpers.Ui;
 import helpers.UniqueName;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
@@ -31,6 +32,19 @@ public class CartCheckoutOrdersTest {
 
     private By testId(String value) {
         return By.cssSelector("[data-testid='" + value + "']");
+    }
+
+    private static final By CART_ROWS = By.cssSelector("[data-testid^='cart-item-']");
+
+    /**
+     * Persistent item id the cart rendered for the single row it contains.
+     *
+     * <p>The cart page mounts before its data arrives, so the row is located with a wait that
+     * keeps polling through the re-render instead of resolving one reference and using it.
+     */
+    private String firstCartItemId(WebDriver driver) {
+        WebElement row = Ui.firstDisplayedAfterReloadIfNeeded(driver, CART_ROWS);
+        return row.getDomAttribute("data-testid").replace("cart-item-", "");
     }
 
     private Integer prepareCartWithProduct(ProductService service) {
@@ -66,7 +80,7 @@ public class CartCheckoutOrdersTest {
 
             Steps.step("Then: cart reflects the added item", () -> {
                 driver.get(Environment.BASE_URL + "/cart");
-                wait.until(d -> d.findElements(By.cssSelector("[data-testid^='cart-item-']"))
+                Ui.resilient(driver).until(d -> d.findElements(CART_ROWS)
                         .stream().anyMatch(row -> row.getText().contains(productName)));
             });
         } finally {
@@ -90,10 +104,8 @@ public class CartCheckoutOrdersTest {
             });
 
             Steps.step("When: user increases item quantity", () -> {
-                WebElement row = wait.until(d -> d.findElements(By.cssSelector("[data-testid^='cart-item-']"))
-                        .stream().filter(WebElement::isDisplayed).findFirst().orElse(null));
-                String itemId = row.getAttribute("data-testid").replace("cart-item-", "");
-                driver.findElement(testId("cart-increase-" + itemId)).click();
+                String itemId = firstCartItemId(driver);
+                Ui.click(driver, testId("cart-increase-" + itemId));
                 wait.until(d -> "2".equals(d.findElement(testId("cart-quantity-" + itemId)).getText()));
             });
 
@@ -123,10 +135,8 @@ public class CartCheckoutOrdersTest {
             });
 
             Steps.step("When: user clicks remove and confirms the native browser dialog", () -> {
-                WebElement row = wait.until(d -> d.findElements(By.cssSelector("[data-testid^='cart-item-']"))
-                        .stream().filter(WebElement::isDisplayed).findFirst().orElse(null));
-                String itemId = row.getAttribute("data-testid").replace("cart-item-", "");
-                driver.findElement(testId("cart-remove-" + itemId)).click();
+                String itemId = firstCartItemId(driver);
+                Ui.click(driver, testId("cart-remove-" + itemId));
                 var alert = wait.until(ExpectedConditions.alertIsPresent());
                 assertTrue(alert.getText().contains("Remove this item from cart?"));
                 alert.accept();
@@ -213,12 +223,12 @@ public class CartCheckoutOrdersTest {
             });
 
             Steps.step("When: user enters invalid boundary values", () -> {
-                wait.until(ExpectedConditions.visibilityOfElementLocated(testId("checkout-fullname"))).sendKeys("Invalid@Name");
-                driver.findElement(testId("checkout-email")).sendKeys("not-an-email");
-                driver.findElement(testId("checkout-zip")).sendKeys("-1");
-                driver.findElement(testId("checkout-card-number")).sendKeys("123");
-                driver.findElement(testId("checkout-expiry")).sendKeys("1399");
-                driver.findElement(testId("checkout-cvv")).sendKeys("1");
+                Ui.type(driver, testId("checkout-fullname"), "Invalid@Name");
+                Ui.type(driver, testId("checkout-email"), "not-an-email");
+                Ui.type(driver, testId("checkout-zip"), "-1");
+                Ui.type(driver, testId("checkout-card-number"), "123");
+                Ui.type(driver, testId("checkout-expiry"), "1399");
+                Ui.type(driver, testId("checkout-cvv"), "1");
             });
 
             Steps.step("Then: validation error messages are displayed for every invalid field", () -> {
@@ -315,7 +325,7 @@ public class CartCheckoutOrdersTest {
             });
 
             Steps.step("When: user searches and clicks to view order detail page", () -> {
-                wait.until(ExpectedConditions.visibilityOfElementLocated(testId("orders-search"))).sendKeys(String.valueOf(orderId));
+                Ui.type(driver, testId("orders-search"), String.valueOf(orderId));
                 wait.until(ExpectedConditions.elementToBeClickable(testId("order-view-" + orderId))).click();
                 assertTrue(wait.until(ExpectedConditions.visibilityOfElementLocated(testId("order-modal"))).getText().contains(String.valueOf(orderId)));
                 wait.until(ExpectedConditions.elementToBeClickable(testId("order-modal-open-page"))).click();
@@ -346,7 +356,7 @@ public class CartCheckoutOrdersTest {
             });
 
             Steps.step("When: user searches by order ID and filters by paid status", () -> {
-                wait.until(ExpectedConditions.visibilityOfElementLocated(testId("orders-search"))).sendKeys(String.valueOf(orderId));
+                Ui.type(driver, testId("orders-search"), String.valueOf(orderId));
                 new org.openqa.selenium.support.ui.Select(wait.until(ExpectedConditions.visibilityOfElementLocated(testId("orders-status-filter")))).selectByValue("paid");
             });
 
