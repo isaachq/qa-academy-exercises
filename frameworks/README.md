@@ -29,9 +29,9 @@ Every project implements the same three teaching scenarios:
 3. `BOOK-TEST-API-001` — Product REST CRUD with guaranteed cleanup.
 
 In addition, every project now executes the complete extended Chapter 5 catalog: 36 pending UI
-cases and 37 pending API cases. The original Cypress comparison scope is retained in the book, but
-the executable Cypress project has full catalog parity so the same contracts can be compared in
-all four runners.
+cases and 37 pending API cases. `typescript-playwright` and `typescript-cypress` implement that
+catalog as real, runnable tests with one test per traceability ID, so the same contracts can be
+compared assertion by assertion in both runners.
 
 ## Shared report steps
 
@@ -64,4 +64,14 @@ Secrets are not exposed to pull requests from forks. A manual rerun remains avai
 5. Extract the report artifact and open `index.html` directly; no local web server is required.
 
 All four frameworks execute sequentially so they cannot compete for the same cart, stock or orders.
-Cypress runs the desktop suite plus the mobile traceability scenario.
+Cypress runs the desktop suite plus the mobile traceability scenario, and its extended specs run
+one spec per Cypress invocation to keep the request rate under the hosted traffic protection.
+
+## Public execution policy
+
+The extended catalog targets a Vercel-hosted environment with deployment and traffic protection.
+Public learners must run one test, or a maximum batch of three tests, per command, selected by
+traceability ID. Complete extended suites are reserved for internal maintainer validation with
+`VERCEL_AUTOMATION_BYPASS_SECRET`. See the
+[Playwright](typescript-playwright/README.md#public-execution-policy) and
+[Cypress](typescript-cypress/README.md#public-execution-policy) execution policies.

@@ -1,2 +1,2 @@
-export const uniqueProductName = (): string =>
-  `e2e-typescript-cypress-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+export const uniqueProductName = (stack = 'typescript-cypress'): string =>
+  `e2e-${stack}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

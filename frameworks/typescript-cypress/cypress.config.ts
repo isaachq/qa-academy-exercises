@@ -1,5 +1,7 @@
 import 'dotenv/config';
+import { existsSync, readdirSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
 import { defineConfig } from 'cypress';
 import { allureCypress } from 'allure-cypress/reporter';
 import webpackPreprocessor from '@cypress/webpack-preprocessor';
@@ -12,6 +14,7 @@ const require = createRequire(import.meta.url);
 
 const mobile = process.env.DEVICE_PROFILE === 'mobile';
 const allureResultsDir = process.env.ALLURE_RESULTS_DIR ?? 'allure-results';
+const downloadsFolder = resolve('cypress/downloads');
 
 /**
  * Cypress ships a batteries-included preprocessor that resolves its Babel presets from the
@@ -49,6 +52,7 @@ export default defineConfig({
   retries: 0,
   viewportWidth: mobile ? 412 : 1440,
   viewportHeight: mobile ? 915 : 900,
+  downloadsFolder,
   e2e: {
     baseUrl: process.env.BASE_URL ?? 'https://qaacademyabc.xyz',
     specPattern: 'tests/**/*.spec.ts',
@@ -63,6 +67,18 @@ export default defineConfig({
             process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
           );
         },
+        /**
+         * Cypress downloads land on disk instead of exposing a download event,
+         * so the Playground download case reads the folder to learn the name
+         * the application chose.
+         */
+        listDownloads() {
+          return existsSync(downloadsFolder) ? readdirSync(downloadsFolder) : [];
+        },
+        clearDownloads() {
+          rmSync(downloadsFolder, { recursive: true, force: true });
+          return null;
+        },
       });
       allureCypress(on, config, { resultsDir: allureResultsDir });
       return config;
@@ -73,5 +89,10 @@ export default defineConfig({
     uiEmail: process.env.UI_EMAIL,
     uiPassword: process.env.UI_PASSWORD,
     deviceProfile: process.env.DEVICE_PROFILE ?? 'desktop',
+    // Maintainer-only. Empty for public learners, which keeps every request and
+    // page load on the same protected path a learner experiences.
+    vercelBypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? '',
+    // Traceability IDs selected with `--env ids=API-CART-001,API-CART-002`.
+    ids: process.env.TEST_IDS ?? '',
   },
 });
