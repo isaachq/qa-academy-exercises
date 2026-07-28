@@ -21,6 +21,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import services.ProductService;
+import pages.StorePage;
 
 @Epic("Chapter 5")
 @Feature("Query Lab & Mobile UI")
@@ -175,6 +176,7 @@ public class QueryLabMobileTest {
                 driver.get(Environment.BASE_URL + "/store");
                 wait.until(ExpectedConditions.visibilityOfElementLocated(testId("store-search"))).sendKeys(productName);
                 wait.until(ExpectedConditions.elementToBeClickable(testId("product-add-to-cart-" + productId))).click();
+                new StorePage(driver).expectReserved(productId, 1);
             });
 
             Steps.step("When: user opens stock info modal", () -> {

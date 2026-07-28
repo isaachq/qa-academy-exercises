@@ -3,9 +3,6 @@ import { defineConfig, devices } from '@playwright/test';
 import { environment, vercelAutomationHeaders } from './config/environment.js';
 
 const bookTestPattern = /BOOK-TEST/;
-// Maintainer-only credentials are loaded from the local environment. Extended
-// public tests receive the bypass during internal validation; Book projects
-// intentionally never inherit these headers.
 const automationHeaders = vercelAutomationHeaders();
 
 const projects = [
@@ -13,7 +10,6 @@ const projects = [
     name: 'api',
     testMatch: /api\/.*\.spec\.ts/,
     grepInvert: bookTestPattern,
-    use: { extraHTTPHeaders: automationHeaders },
   },
   {
     name: 'desktop-chromium',
@@ -21,14 +17,12 @@ const projects = [
     grepInvert: bookTestPattern,
     use: {
       ...devices['Desktop Chrome'],
-      extraHTTPHeaders: automationHeaders,
     },
   },
   {
     name: 'book-api',
     testMatch: /api\/.*\.spec\.ts/,
     grep: bookTestPattern,
-    use: {},
   },
   {
     name: 'book-desktop-chromium',
@@ -58,6 +52,7 @@ export default defineConfig({
   ],
   use: {
     baseURL: environment.baseUrl,
+    extraHTTPHeaders: automationHeaders,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

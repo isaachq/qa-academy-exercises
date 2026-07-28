@@ -6,6 +6,8 @@ contract assertion. The client also dispatches the `QUERY` verb, which the
 platform accepts natively on `/api/products/query` and `/api/orders/query`.
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 import requests

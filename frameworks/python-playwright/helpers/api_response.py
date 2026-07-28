@@ -5,6 +5,8 @@ only when the application itself throttles, annotated with its incident ID and
 checked for the trace headers the platform promises on every `/api/*` response.
 """
 
+from __future__ import annotations
+
 import json
 import os
 import time

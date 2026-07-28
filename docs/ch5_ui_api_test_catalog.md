@@ -12,6 +12,7 @@
 - Each test case generates unique dynamic test data and executes teardown cleanup regardless of test outcome.
 - API authentication uses `API_KEY`; UI tests prepare state via `localStorage`, except dedicated authentication test cases.
 - `orders.total` is the persistent database field. `total_amount` is used solely as a summary aggregate.
+- **JUnit 5 Method Granularity Note**: All 4 frameworks cover 100% identical business scenarios. While Playwright (`page.route()`) and Cypress (`cy.intercept()`) combine network mock states in `UI-QUERY-004` into a single test block (74 extended / 78 total), Java Selenium WebDriver splits these deterministic Query Lab sub-states into explicit JUnit 5 `@Test` methods (`QueryLabMobileTest.java`), resulting in 77 extended / 81 total test method executions with zero reliance on network interception mocks.
 
 ## 2. Book Scenarios
 

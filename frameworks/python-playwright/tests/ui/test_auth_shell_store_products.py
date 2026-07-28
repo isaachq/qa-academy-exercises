@@ -134,7 +134,7 @@ def test_ui_store_002_search_and_filter(
     product = None
     try:
         product = product_service.create_product(
-            {"name": unique_product_name(), **PRODUCT, "category": "Office"}
+            {"name": unique_product_name("ui-store-filter"), **PRODUCT, "category": "Office"}
         )
         page.goto("/store")
         with step("When: user searches by name and filters the category"):

@@ -5,6 +5,8 @@ order whose financial values are reconciled with the platform before the
 assertions of the test start.
 """
 
+from __future__ import annotations
+
 import time
 from typing import Any
 

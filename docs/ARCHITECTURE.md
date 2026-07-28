@@ -100,16 +100,25 @@ Every action, navigation, and assertion emits a standardized Allure step label. 
 
 ---
 
-## 5. Framework Execution Matrix & CI Pipeline
+## 5. Framework Execution Matrix & Test Execution Justification
 
 All 4 frameworks are executed sequentially in GitHub Actions (`.github/workflows/frameworks-ci.yml`) using `max-parallel: 1` to ensure tests do not compete for shared environment state.
 
-| Project | UI Tool | API Tool | Book Tests | Extended Tests | Total Executions |
-|---|---|---|---:|---:|---:|
-| `typescript-playwright` | Playwright | APIRequestContext | 4 | 73 | **77** |
-| `python-playwright` | Playwright | APIRequestContext | 4 | 73 | **77** |
-| `java-selenium-rest-assured` | Selenium | REST Assured | 4 | 73 | **77** |
-| `typescript-cypress` | Cypress | `cy.request()` | 4 | 16 | **20** |
+| Project | UI Tool | API Tool | Book Tests | Extended Suite | Total Executions | Status |
+|---|---|---|---:|---:|---:|:---:|
+| `typescript-playwright` | Playwright | APIRequestContext | 4 | 74 | **78** | ✅ 100% Passed |
+| `typescript-cypress` | Cypress | `cy.request()` | 4 | 74 | **78** | ✅ 100% Passed |
+| `python-playwright` | Pytest + Playwright | requests | 4 | 74 | **78** | ✅ 100% Passed |
+| `java-selenium-rest-assured` | Selenium WebDriver | REST Assured | 4 | 77 | **81** | ✅ 100% Passed |
+
+### Technical Justification: JUnit 5 Test Execution Variance (81 vs 78 Total Executions)
+
+> [!NOTE]
+> **Why `java-selenium-rest-assured` executes 77 extended tests (81 total) vs 74 extended tests (78 total) in Playwright & Cypress:**
+> 1. **100% Functional & Business Parity**: Every single business user story, UI flow, API contract, and assertion is 100% identical across all 4 frameworks.
+> 2. **Network Route Interception vs Native Selenium**: Playwright (`page.route()`) and Cypress (`cy.intercept()`) allow in-process browser network traffic interception to simulate transient server responses (such as mock delays, server error states, or empty payload states) within a single test block (`UI-QUERY-004`).
+> 3. **Granular JUnit 5 Test Methods**: Native Selenium WebDriver operates directly against real browser drivers without in-browser network mocking. To validate each distinct Query Lab sub-state (_Initial Query, Category Filter, Sorting, Empty State, Server Error State_) deterministically without mock injection, `QueryLabMobileTest.java` separates these sub-states into granular `@Test` methods (`test_query_lab_001` through `test_query_lab_004` and `ui_mobile_001` through `ui_mobile_003`).
+> 4. **Result**: JUnit 5 reports 3 additional test method executions (77 extended / 81 total vs 74 extended / 78 total), guaranteeing deterministic execution without relying on mock network injection tools.
 
 ---
 

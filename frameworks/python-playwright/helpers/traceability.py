@@ -5,6 +5,8 @@ printed in the catalog, in the report and in the exercise text is also the value
 used to select a test on the command line.
 """
 
+from __future__ import annotations
+
 import re
 
 TITLE_ID = re.compile(r"^\[([A-Z0-9-]+)\]")

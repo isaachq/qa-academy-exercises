@@ -31,7 +31,7 @@ Every project implements the core teaching scenarios (Book tests):
 3. `BOOK-TEST-UI-002` — Reproducible Playground flakiness with a fixed seed.
 4. `BOOK-TEST-API-001` — Product REST CRUD with guaranteed cleanup.
 
-In addition, every project executes the complete extended catalog: 36 UI cases and 37 API cases.
+In addition, every project executes the complete extended catalog: 36 UI cases and 37 API cases (74 extended tests / 78 total in Playwright and Cypress; 77 extended tests / 81 total in Java due to JUnit 5 test method granularity for deterministic Selenium browser tests without network interception mocks).
 
 ## Modular Automation Bypass & Public Execution Policy
 
