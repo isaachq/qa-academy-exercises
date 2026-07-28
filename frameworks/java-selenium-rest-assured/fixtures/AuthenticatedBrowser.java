@@ -23,7 +23,13 @@ public final class AuthenticatedBrowser {
         } else {
             options.addArguments("--window-size=1440,900");
         }
-        WebDriver driver = new ChromeDriver(options);
+        ChromeDriver driver = new ChromeDriver(options);
+        if (!Environment.automationHeaders().isEmpty()) {
+            driver.executeCdpCommand("Network.enable", Map.of());
+            driver.executeCdpCommand(
+                    "Network.setExtraHTTPHeaders",
+                    Map.of("headers", Environment.automationHeaders()));
+        }
         driver.get(Environment.BASE_URL);
         JavascriptExecutor js = (JavascriptExecutor) driver;
         js.executeScript(

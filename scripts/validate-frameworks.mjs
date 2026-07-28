@@ -1,13 +1,55 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = new URL('..', import.meta.url).pathname;
+const root = fileURLToPath(new URL('..', import.meta.url));
 const projects = [
   'python-playwright',
   'typescript-playwright',
   'java-selenium-rest-assured',
   'typescript-cypress',
 ];
+const pendingUiIds = [
+  'UI-AUTH-001', 'UI-AUTH-002', 'UI-SHELL-001', 'UI-SHELL-002',
+  'UI-STORE-001', 'UI-STORE-002', 'UI-STORE-003',
+  'UI-PRODUCT-001', 'UI-PRODUCT-002', 'UI-PRODUCT-003', 'UI-PRODUCT-004',
+  'UI-CART-001', 'UI-CART-002', 'UI-CART-003', 'UI-CART-004',
+  'UI-CHECKOUT-001', 'UI-CHECKOUT-002', 'UI-CHECKOUT-003', 'UI-CHECKOUT-004',
+  'UI-ORDER-001', 'UI-ORDER-002', 'UI-ORDER-003',
+  'UI-QUERY-001', 'UI-QUERY-002', 'UI-QUERY-003', 'UI-QUERY-004',
+  'UI-PLAY-001', 'UI-PLAY-002', 'UI-PLAY-003', 'UI-PLAY-004', 'UI-PLAY-005',
+  'UI-PLAY-006', 'UI-PLAY-008',
+  'UI-MOBILE-001', 'UI-MOBILE-002', 'UI-MOBILE-003',
+];
+const pendingApiIds = [
+  'API-AUTH-001', 'API-AUTH-002', 'API-AUTH-003', 'API-AUTH-004', 'API-HEALTH-001',
+  'API-PRODUCT-001', 'API-PRODUCT-003', 'API-PRODUCT-004', 'API-PRODUCT-005',
+  'API-CART-001', 'API-CART-002', 'API-CART-003', 'API-CART-004', 'API-CART-005',
+  'API-CART-006',
+  'API-ORDER-001', 'API-ORDER-002', 'API-ORDER-003', 'API-ORDER-004', 'API-ORDER-005',
+  'API-ORDER-006', 'API-ORDER-007', 'API-ORDER-008',
+  'API-QUERY-001', 'API-QUERY-002', 'API-QUERY-003', 'API-QUERY-004', 'API-QUERY-005',
+  'API-QUERY-006', 'API-QUERY-007',
+  'API-GQL-001', 'API-GQL-002', 'API-GQL-003', 'API-GQL-004', 'API-GQL-005',
+  'API-GQL-006', 'API-GQL-007',
+];
+const extendedCatalogFiles = {
+  'python-playwright': ['data/extended_catalog.py'],
+  'java-selenium-rest-assured': ['data/ExtendedCatalog.java'],
+  'typescript-cypress': [
+    'tests/ui/extended_catalog.spec.ts',
+    'tests/api/extended_catalog.spec.ts',
+  ],
+};
+const readFilesRecursively = (directory, extension) =>
+  readdirSync(directory)
+    .flatMap((entry) => {
+      const path = join(directory, entry);
+      return statSync(path).isDirectory()
+        ? readFilesRecursively(path, extension)
+        : path.endsWith(extension) ? [readFileSync(path, 'utf8')] : [];
+    })
+    .join('\n');
 const layers = ['tests/ui', 'tests/api', 'pages', 'services', 'fixtures', 'helpers', 'data', 'config'];
 const scenarios = [
   ['tests/ui', 'product_purchase_traceability'],
@@ -142,6 +184,35 @@ for (const project of projects) {
     }
   }
 
+  const extendedSource = project === 'typescript-playwright'
+    ? readFilesRecursively(join(base, 'tests'), '.ts')
+    : extendedCatalogFiles[project]
+      .map((file) => {
+        const path = join(base, file);
+        if (!existsSync(path)) {
+          failures.push(`${project}: missing extended catalog ${file}`);
+          return '';
+        }
+        return readFileSync(path, 'utf8');
+      })
+      .join('\n');
+  for (const id of [...pendingUiIds, ...pendingApiIds]) {
+    const executableTitle = new RegExp(`test\\(['"\`]\\[${id}\\]`);
+    const declared = project === 'typescript-playwright'
+      ? executableTitle.test(extendedSource)
+      : extendedSource.includes(id);
+    if (!declared) {
+      failures.push(`${project}: missing ${project === 'typescript-playwright' ? 'executable test' : 'extended catalog declaration'} for ${id}`);
+    }
+  }
+  if (project === 'typescript-playwright') {
+    for (const marker of ['allure.feature(', 'allure.story(', 'step(']) {
+      if (!extendedSource.includes(marker)) {
+        failures.push(`${project}: executable coverage does not declare ${marker}`);
+      }
+    }
+  }
+
   const catalogPath = join(base, stepCatalogFiles[project]);
   if (!existsSync(catalogPath)) {
     failures.push(`${project}: missing step catalog ${stepCatalogFiles[project]}`);
@@ -164,5 +235,6 @@ if (failures.length) {
 
 console.log(
   'All four frameworks share the required layers, teaching scenarios and the ' +
-    `${catalog.length} entry report catalog.`,
+    `${catalog.length} entry report catalog. All four also declare the ` +
+    `${pendingUiIds.length} pending UI and ${pendingApiIds.length} pending API cases.`,
 );

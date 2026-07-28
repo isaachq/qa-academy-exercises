@@ -1,19 +1,48 @@
 import 'dotenv/config';
 import { defineConfig, devices } from '@playwright/test';
-import { environment } from './config/environment.js';
+import { environment, vercelAutomationHeaders } from './config/environment.js';
 
-const selectedProfile = process.env.DEVICE_PROFILE ?? 'all';
+const bookTestPattern = /BOOK-TEST/;
+// Maintainer-only credentials are loaded from the local environment. Extended
+// public tests receive the bypass during internal validation; Book projects
+// intentionally never inherit these headers.
+const automationHeaders = vercelAutomationHeaders();
+
 const projects = [
   {
+    name: 'api',
+    testMatch: /api\/.*\.spec\.ts/,
+    grepInvert: bookTestPattern,
+    use: { extraHTTPHeaders: automationHeaders },
+  },
+  {
     name: 'desktop-chromium',
+    testMatch: /ui\/.*\.spec\.ts/,
+    grepInvert: bookTestPattern,
+    use: {
+      ...devices['Desktop Chrome'],
+      extraHTTPHeaders: automationHeaders,
+    },
+  },
+  {
+    name: 'book-api',
+    testMatch: /api\/.*\.spec\.ts/,
+    grep: bookTestPattern,
+    use: {},
+  },
+  {
+    name: 'book-desktop-chromium',
+    testMatch: /ui\/.*\.spec\.ts/,
+    grep: bookTestPattern,
     use: { ...devices['Desktop Chrome'] },
   },
   {
     name: 'mobile-chromium',
     testMatch: /product_purchase_traceability\.spec\.ts/,
+    grep: bookTestPattern,
     use: { ...devices['Pixel 7'] },
   },
-].filter((project) => selectedProfile === 'all' || project.name.startsWith(selectedProfile));
+];
 
 export default defineConfig({
   testDir: './tests',

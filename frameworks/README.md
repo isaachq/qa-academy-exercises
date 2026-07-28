@@ -28,6 +28,11 @@ Every project implements the same three teaching scenarios:
 2. `BOOK-TEST-UI-002` — Reproducible Playground flakiness with a fixed seed.
 3. `BOOK-TEST-API-001` — Product REST CRUD with guaranteed cleanup.
 
+In addition, every project now executes the complete extended Chapter 5 catalog: 36 pending UI
+cases and 37 pending API cases. The original Cypress comparison scope is retained in the book, but
+the executable Cypress project has full catalog parity so the same contracts can be compared in
+all four runners.
+
 ## Shared report steps
 
 The four projects use the same test titles and the same Allure step names, declared in each
@@ -42,7 +47,8 @@ The catalog and the rules for changing it are in
 
 All framework code, documentation, logs, test titles and Allure evidence are written in English.
 Accounts are created manually. Copy each `.env.example` to `.env` and provide the existing account
-values before running live tests.
+values before running live tests. `UI_PASSWORD` is used only by the dedicated valid-login cases;
+the rest of the UI suite prepares authenticated state from `API_KEY`.
 
 ## GitHub Actions live execution
 
@@ -50,7 +56,8 @@ The pull request workflow always compiles and collects all four projects. For br
 repository, all four frameworks run their real UI and API scenarios automatically.
 Secrets are not exposed to pull requests from forks. A manual rerun remains available:
 
-1. Add `QA_ACADEMY_API_KEY` and `QA_ACADEMY_UI_EMAIL` as repository Actions secrets.
+1. Add `QA_ACADEMY_API_KEY`, `QA_ACADEMY_UI_EMAIL` and `QA_ACADEMY_UI_PASSWORD` as repository
+   Actions secrets.
 2. Push or update a same-repository pull request, or open **Actions → Frameworks CI → Run workflow**.
 3. For a manual run, select the framework branch and start it.
 4. Open the run summary to download the generated self-contained Allure HTML report or its raw results.

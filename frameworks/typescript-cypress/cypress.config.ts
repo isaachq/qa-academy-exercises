@@ -3,6 +3,10 @@ import { createRequire } from 'node:module';
 import { defineConfig } from 'cypress';
 import { allureCypress } from 'allure-cypress/reporter';
 import webpackPreprocessor from '@cypress/webpack-preprocessor';
+import {
+  nodeApiRequest,
+  type NodeApiRequest,
+} from './helpers/node_api_request';
 
 const require = createRequire(import.meta.url);
 
@@ -51,6 +55,15 @@ export default defineConfig({
     supportFile: 'fixtures/support.ts',
     setupNodeEvents(on, config) {
       on('file:preprocessor', typescriptPreprocessor);
+      on('task', {
+        apiRequest(request: NodeApiRequest) {
+          return nodeApiRequest(
+            config.baseUrl ?? 'https://qaacademyabc.xyz',
+            request,
+            process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+          );
+        },
+      });
       allureCypress(on, config, { resultsDir: allureResultsDir });
       return config;
     },
@@ -58,6 +71,7 @@ export default defineConfig({
   env: {
     apiKey: process.env.API_KEY,
     uiEmail: process.env.UI_EMAIL,
+    uiPassword: process.env.UI_PASSWORD,
     deviceProfile: process.env.DEVICE_PROFILE ?? 'desktop',
   },
 });

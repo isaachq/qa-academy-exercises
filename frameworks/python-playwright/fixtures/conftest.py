@@ -8,7 +8,10 @@ from services.product_service import ProductService
 
 
 def authenticated_context(
-    browser: Browser, playwright: Playwright, device_name: str | None = None
+    browser: Browser,
+    playwright: Playwright,
+    device_name: str | None = None,
+    accept_terms: bool = True,
 ) -> BrowserContext:
     options = (
         dict(playwright.devices[device_name])
@@ -16,13 +19,19 @@ def authenticated_context(
         else {"viewport": {"width": 1440, "height": 900}}
     )
     options["base_url"] = environment.base_url
+    options["extra_http_headers"] = environment.automation_headers
     context = browser.new_context(**options)
+    terms_script = (
+        "localStorage.setItem('qa-academy-terms-consent-v1', 'accepted');"
+        if accept_terms
+        else "localStorage.removeItem('qa-academy-terms-consent-v1');"
+    )
     context.add_init_script(
         f"""
         (() => {{
           localStorage.setItem('api_token', {json.dumps(environment.api_key)});
           localStorage.setItem('user_email', {json.dumps(environment.ui_email)});
-          localStorage.setItem('qa-academy-terms-consent-v1', 'accepted');
+          {terms_script}
         }})()
         """
     )
