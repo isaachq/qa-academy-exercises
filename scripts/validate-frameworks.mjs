@@ -33,13 +33,15 @@ const pendingApiIds = [
   'API-GQL-001', 'API-GQL-002', 'API-GQL-003', 'API-GQL-004', 'API-GQL-005',
   'API-GQL-006', 'API-GQL-007',
 ];
+/**
+ * Projects whose extended catalog is a set of real, runnable tests rather than a
+ * declared list. They are validated by looking for one executable test per
+ * traceability ID under `tests/`.
+ */
+const executableProjects = new Set(['typescript-playwright', 'typescript-cypress']);
 const extendedCatalogFiles = {
   'python-playwright': ['data/extended_catalog.py'],
   'java-selenium-rest-assured': ['data/ExtendedCatalog.java'],
-  'typescript-cypress': [
-    'tests/ui/extended_catalog.spec.ts',
-    'tests/api/extended_catalog.spec.ts',
-  ],
 };
 const readFilesRecursively = (directory, extension) =>
   readdirSync(directory)
@@ -184,7 +186,8 @@ for (const project of projects) {
     }
   }
 
-  const extendedSource = project === 'typescript-playwright'
+  const executable = executableProjects.has(project);
+  const extendedSource = executable
     ? readFilesRecursively(join(base, 'tests'), '.ts')
     : extendedCatalogFiles[project]
       .map((file) => {
@@ -197,15 +200,17 @@ for (const project of projects) {
       })
       .join('\n');
   for (const id of [...pendingUiIds, ...pendingApiIds]) {
-    const executableTitle = new RegExp(`test\\(['"\`]\\[${id}\\]`);
-    const declared = project === 'typescript-playwright'
+    // `test(` is Playwright's runner, `it(` is Cypress's; both must carry the
+    // traceability ID as the first thing in the title.
+    const executableTitle = new RegExp(`(test|it)\\(\\s*['"\`]\\[${id}\\]`);
+    const declared = executable
       ? executableTitle.test(extendedSource)
       : extendedSource.includes(id);
     if (!declared) {
-      failures.push(`${project}: missing ${project === 'typescript-playwright' ? 'executable test' : 'extended catalog declaration'} for ${id}`);
+      failures.push(`${project}: missing ${executable ? 'executable test' : 'extended catalog declaration'} for ${id}`);
     }
   }
-  if (project === 'typescript-playwright') {
+  if (executable) {
     for (const marker of ['allure.feature(', 'allure.story(', 'step(']) {
       if (!extendedSource.includes(marker)) {
         failures.push(`${project}: executable coverage does not declare ${marker}`);

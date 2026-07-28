@@ -1,4 +1,6 @@
+import { fill } from '../helpers/form';
 import { ACTIONS, step } from '../helpers/steps';
+import { expectHidden } from '../helpers/visibility';
 
 export type Inventory = { stock: number; reserved: number; available: number };
 
@@ -11,7 +13,7 @@ export class StorePage {
 
   searchProduct(productId: number, productName: string): void {
     step(ACTIONS.storeSearch, () => {
-      cy.get('[data-testid="store-search"]').clear().type(productName);
+      fill('[data-testid="store-search"]', productName);
       cy.get(`[data-testid="product-add-to-cart-${productId}"]`).should('be.visible');
     });
   }
@@ -107,15 +109,7 @@ export class StorePage {
         ).to.eq(true);
       });
       cy.get('[data-testid="order-history-close"]').should('be.visible').click();
-      // The other three frameworks accept a modal that is hidden or removed, so
-      // assert the same contract instead of requiring removal from the DOM.
-      cy.get('body').should(($body) => {
-        const modal = $body.find('[data-testid="order-history-modal"]');
-        expect(
-          modal.length === 0 || !modal.is(':visible'),
-          'order history modal is closed',
-        ).to.eq(true);
-      });
+      expectHidden('[data-testid="order-history-modal"]', 'order history modal');
     });
   }
 }
