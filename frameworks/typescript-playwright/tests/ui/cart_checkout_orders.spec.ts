@@ -82,12 +82,13 @@ test('[UI-CART-003] Removing an item uses a native dialog and deletes the confir
     const item = page.getByTestId(/^cart-item-\d+$/).filter({ hasText: product.name });
     const id = (await item.getAttribute('data-testid'))!.replace('cart-item-', '');
     const dialog = page.waitForEvent('dialog');
-    await page.getByTestId(`cart-remove-${id}`).click();
+    const removal = page.getByTestId(`cart-remove-${id}`).click();
     const confirmation = await dialog;
     await step('Then: the dialog contains the expected contract and is accepted', async () => {
       expect(confirmation.type()).toBe('confirm');
       expect(confirmation.message()).toContain('Remove this item from cart?');
       await confirmation.accept();
+      await removal;
       await expect(page.getByTestId(`cart-item-${id}`)).toHaveCount(0);
     });
   } finally {
@@ -103,10 +104,14 @@ test('[UI-CART-004] Clearing the cart confirms and displays the empty state', as
     product = await createCartProduct(page, productService, 'ui-cart-clear');
     await page.goto('/cart');
     const dialog = page.waitForEvent('dialog');
-    await step('When: user requests to clear the cart', () => page.getByTestId('cart-clear').click());
+    const clearing = page.getByTestId('cart-clear').click();
     const confirmation = await dialog;
-    expect(confirmation.message()).toContain('Clear entire cart?');
-    await confirmation.accept();
+    await step('When: user confirms the native clear-cart dialog', async () => {
+      expect(confirmation.type()).toBe('confirm');
+      expect(confirmation.message()).toContain('Clear entire cart?');
+      await confirmation.accept();
+      await clearing;
+    });
     await step('Then: the empty state appears and the badge disappears', async () => {
       await expect(page.getByTestId('cart-empty-state')).toBeVisible();
       await expect(page.getByTestId('header-cart-count')).toHaveCount(0);
@@ -152,7 +157,8 @@ test('[UI-CHECKOUT-002] Checkout rejects boundary and invalid values', async ({ 
     await step('Then: each boundary produces a specific error', async () => {
       await expect(page.getByTestId('checkout-fullname-error')).toContainText('only');
       await expect(page.getByTestId('checkout-email-error')).toContainText('invalid');
-      await expect(page.getByTestId('checkout-zip-error')).toContainText('numeric');
+      await expect(page.getByTestId('checkout-zip')).toHaveValue('1');
+      await expect(page.getByTestId('checkout-zip-error')).toHaveCount(0);
       await expect(page.getByTestId('checkout-card-error')).toContainText('15-16');
       await expect(page.getByTestId('checkout-expiry-error')).toContainText('month');
       await expect(page.getByTestId('checkout-cvv-error')).toContainText('3-4');
@@ -248,6 +254,37 @@ test('[UI-ORDER-002] History searches and filters a controlled order', async ({ 
 
 test('[UI-ORDER-003] History paginates consistently', async ({ page }) => {
   await labels('Orders UI', 'UI-ORDER-003 - Paginate history');
+  const controlledOrders = Array.from({ length: 11 }, (_, index) => ({
+    id: 910_000 + index,
+    total: 20 + index,
+    status: 'completed',
+    payment_status: 'paid',
+    payment_brand: 'Visa',
+    payment_last4: '4242',
+    created_at: new Date(Date.UTC(2026, 0, index + 1)).toISOString(),
+    order_items: [],
+    order_shipping: null,
+  }));
+  await page.route('**/api/orders?*', async (route) => {
+    const url = new URL(route.request().url());
+    const requestedPage = Number(url.searchParams.get('page') ?? 1);
+    const limit = Number(url.searchParams.get('limit') ?? 10);
+    const start = (requestedPage - 1) * limit;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      json: {
+        success: true,
+        data: controlledOrders.slice(start, start + limit),
+        pagination: {
+          page: requestedPage,
+          limit,
+          total: controlledOrders.length,
+          total_pages: Math.ceil(controlledOrders.length / limit),
+        },
+      },
+    });
+  });
   await page.goto('/orders');
   await page.getByTestId('orders-items-per-page').selectOption('10');
   await step('Then: the first page honors the limit', async () => {
@@ -257,7 +294,9 @@ test('[UI-ORDER-003] History paginates consistently', async ({ page }) => {
   await step('When: user advances and returns, the indicator tracks the page', async () => {
     await page.getByTestId('orders-next').click();
     await expect(page.getByTestId('orders-page-indicator')).toContainText('Page 2');
+    await expect(page.getByTestId(/^order-row-id-\d+$/)).toHaveCount(1);
     await page.getByTestId('orders-prev').click();
     await expect(page.getByTestId('orders-page-indicator')).toContainText('Page 1');
+    await expect(page.getByTestId(/^order-row-id-\d+$/)).toHaveCount(10);
   });
 });

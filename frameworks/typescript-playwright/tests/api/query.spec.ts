@@ -8,6 +8,7 @@ import {
 } from '../../helpers/api_response.js';
 import { step } from '../../helpers/steps.js';
 import { uniqueProductName } from '../../helpers/unique_name.js';
+import type { ControlledOrder } from '../../services/order_service.js';
 import type { Product } from '../../services/product_service.js';
 
 const auth = () => ({
@@ -84,37 +85,52 @@ test('[API-QUERY-004] GET query is rejected with the documented Allow header', a
   expect((await expectApiJson<{ success: boolean }>(response)).success).toBe(false);
 });
 
-test('[API-QUERY-005] Native QUERY orders sorts persisted total and keeps aggregate summary separate', async ({ request }, testInfo) => {
+test('[API-QUERY-005] Native QUERY orders sorts persisted total and reports pagination separately', async ({ request, orderService }, testInfo) => {
   await labels('API-QUERY-005 - Orders QUERY');
-  const response = await step('When: client sends native orders QUERY sorted by total', () =>
-    guardedApi(testInfo, () => request.fetch('/api/orders/query', {
-      method: 'QUERY', headers: auth(), data: orderDocument(),
-    })));
-  expect(response.status()).toBe(200);
-  const payload = await expectApiJson<any>(response);
-  expect(payload.meta.transport).toBe('QUERY');
-  expect(payload.data[0].total).toBeDefined();
-  expect(payload.summary.total_amount).toBeGreaterThan(0);
+  let controlled: ControlledOrder | undefined;
+  try {
+    controlled = await step('Given: client creates the order that will be queried', () =>
+      orderService.createControlledOrder('native-order-query'));
+    const response = await step('When: client sends native orders QUERY sorted by total', () =>
+      guardedApi(testInfo, () => request.fetch('/api/orders/query', {
+        method: 'QUERY',
+        headers: auth(),
+        data: orderDocument([controlled!.product.id]),
+      })));
+    expect(response.status()).toBe(200);
+    const payload = await expectApiJson<any>(response);
+    expect(payload.meta.transport).toBe('QUERY');
+    expect(payload.data).toHaveLength(1);
+    expect(payload.data[0].id).toBe(controlled.order.id);
+    expect(payload.data[0].total).toBeCloseTo(controlled.order.total, 2);
+    expect(payload.pagination).toEqual(expect.objectContaining({ page: 1, limit: 1, total: 1 }));
+    expect(payload.meta.sorted_by).toBe('total asc');
+  } finally {
+    await step('Teardown: delete the controlled order and product', () =>
+      orderService.cleanup(controlled));
+  }
 });
 
-test('[API-QUERY-006] Order relations are filtered before total and pagination', async ({ request }, testInfo) => {
+test('[API-QUERY-006] Order relations are filtered before total and pagination', async ({ request, orderService }, testInfo) => {
   await labels('API-QUERY-006 - Relation before pagination');
-  const existing = await guardedApi(testInfo, () =>
-    request.get('/api/orders?page=1&limit=100', { headers: auth() }));
-  const orders = (await expectApiJson<{ data: Array<{
-    order_items: Array<{ product_id: number }>;
-  }> }>(existing)).data;
-  const productId = orders.flatMap((order) => order.order_items ?? [])[0]?.product_id;
-  expect(productId, 'At least one existing order item is required').toBeTruthy();
-  const response = await step('When: client filters an existing relation with a one-row page', () =>
-    guardedApi(testInfo, () => request.post('/api/orders/query', {
-      headers: auth(), data: orderDocument([productId]),
-    })));
-  expect(response.status()).toBe(200);
-  const payload = await expectApiJson<any>(response);
-  expect(payload.data).toHaveLength(1);
-  expect(payload.pagination.total).toBeGreaterThanOrEqual(1);
-  expect(payload.pagination.limit).toBe(1);
+  let controlled: ControlledOrder | undefined;
+  try {
+    controlled = await step('Given: client creates an isolated order and product relation', () =>
+      orderService.createControlledOrder('query-relation'));
+    const response = await step('When: client filters the controlled relation with a one-row page', () =>
+      guardedApi(testInfo, () => request.post('/api/orders/query', {
+        headers: auth(), data: orderDocument([controlled!.product.id]),
+      })));
+    expect(response.status()).toBe(200);
+    const payload = await expectApiJson<any>(response);
+    expect(payload.data).toHaveLength(1);
+    expect(payload.data[0].id).toBe(controlled.order.id);
+    expect(payload.pagination.total).toBe(1);
+    expect(payload.pagination.limit).toBe(1);
+  } finally {
+    await step('Teardown: delete the controlled order and product', () =>
+      orderService.cleanup(controlled));
+  }
 });
 
 test('[API-QUERY-007] QUERY rejects invalid ranges fields sort dates IDs and limits', async ({ request }, testInfo) => {

@@ -16,3 +16,12 @@ export const environment = {
     return requireValue('UI_PASSWORD');
   },
 };
+
+export function vercelAutomationHeaders(): Record<string, string> {
+  const secret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
+  if (!secret) return {};
+  return {
+    'x-vercel-protection-bypass': secret,
+    'x-vercel-set-bypass-cookie': 'true',
+  };
+}

@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "test": "playwright test",
-    "test:api": "playwright test --project=api",
-    "test:book": "playwright test --grep BOOK-TEST",
-    "test:desktop": "playwright test --project=desktop-chromium",
+    "test:api": "playwright test --project=api --project=book-api",
+    "test:book": "playwright test --project=book-api --project=book-desktop-chromium --project=mobile-chromium",
+    "test:desktop": "playwright test --project=desktop-chromium --project=book-desktop-chromium",
     "test:mobile": "playwright test --project=mobile-chromium",
     "test:list": "playwright test --list",
     "typecheck": "tsc --noEmit",

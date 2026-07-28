@@ -1,5 +1,5 @@
 import { allure } from 'allure-playwright';
-import { environment } from '../../config/environment.js';
+import { environment, vercelAutomationHeaders } from '../../config/environment.js';
 import { teachingData } from '../../data/test_data.js';
 import { test, expect } from '../../fixtures/test.js';
 import { step } from '../../helpers/steps.js';
@@ -14,7 +14,10 @@ async function labels(feature: string, story: string) {
 
 test('[UI-AUTH-001] Valid login preserves an authenticated session', async ({ browser }) => {
   await labels('Authentication UI', 'UI-AUTH-001 - Valid login');
-  const context = await browser.newContext();
+  const context = await browser.newContext({ extraHTTPHeaders: vercelAutomationHeaders() });
+  await context.addInitScript(() => {
+    localStorage.setItem('qa-academy-terms-consent-v1', 'accepted');
+  });
   const page = await context.newPage();
   try {
     await step('Given: login opens without a previous session', () => page.goto('/login'));
@@ -36,7 +39,10 @@ test('[UI-AUTH-001] Valid login preserves an authenticated session', async ({ br
 
 test('[UI-AUTH-002] Invalid login displays a traceable error', async ({ browser }) => {
   await labels('Authentication UI', 'UI-AUTH-002 - Invalid login');
-  const context = await browser.newContext();
+  const context = await browser.newContext({ extraHTTPHeaders: vercelAutomationHeaders() });
+  await context.addInitScript(() => {
+    localStorage.setItem('qa-academy-terms-consent-v1', 'accepted');
+  });
   const page = await context.newPage();
   try {
     await page.goto('/login');
@@ -56,7 +62,7 @@ test('[UI-AUTH-002] Invalid login displays a traceable error', async ({ browser 
 
 test('[UI-SHELL-001] Accepting the Terms Gate persists consent', async ({ browser }) => {
   await labels('Application shell UI', 'UI-SHELL-001 - Accept Terms Gate');
-  const context = await browser.newContext();
+  const context = await browser.newContext({ extraHTTPHeaders: vercelAutomationHeaders() });
   await context.addInitScript(({ apiKey, email }) => {
     localStorage.setItem('api_token', apiKey);
     localStorage.setItem('user_email', email);
@@ -109,7 +115,7 @@ test('[UI-STORE-001] Store loads its catalog and controls', async ({ page }) => 
   });
 });
 
-test('[UI-STORE-002] Store busca y filtra productos', async ({ page, productService }) => {
+test('[UI-STORE-002] Store searches and filters products', async ({ page, productService }) => {
   await labels('Store UI', 'UI-STORE-002 - Search and filter');
   let product: Product | undefined;
   try {
@@ -133,8 +139,19 @@ test('[UI-STORE-002] Store busca y filtra productos', async ({ page, productServ
 test('[UI-STORE-003] Store paginates using the selected page size', async ({ page }) => {
   await labels('Store UI', 'UI-STORE-003 - Pagination');
   await page.goto('/store');
+  await expect(page.getByTestId(/^product-add-to-cart-\d+$/).first()).toBeVisible();
   await step('When: user selects the smallest page size', async () => {
+    const pageResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return url.pathname === '/api/products'
+        && url.searchParams.get('limit') === '5'
+        && response.request().method() === 'GET';
+    });
     await page.getByTestId('store-items-per-page').selectOption('5');
+    const response = await pageResponse;
+    expect(response.status()).toBe(200);
+    const payload = await response.json();
+    expect(payload.data.length).toBeLessThanOrEqual(5);
   });
   await step('Then: the catalog is limited and navigation changes page', async () => {
     await expect(page.getByTestId(/^product-add-to-cart-\d+$/)).toHaveCount(5);

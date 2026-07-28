@@ -1,6 +1,7 @@
 import { allure } from 'allure-playwright';
 import type { APIRequestContext, TestInfo } from '@playwright/test';
 import { environment } from '../../config/environment.js';
+import { teachingData } from '../../data/test_data.js';
 import { test, expect } from '../../fixtures/test.js';
 import { step } from '../../helpers/steps.js';
 import { uniqueProductName } from '../../helpers/unique_name.js';
@@ -204,27 +205,33 @@ test('[API-GQL-005] Cart mutations add update remove and clear items', async ({ 
   }
 });
 
-test('[API-GQL-006] Order mutation persists the cart and computed financial values', async ({ request }, testInfo) => {
+test('[API-GQL-006] Order mutation persists the cart and computed financial values', async ({ request, productService }, testInfo) => {
   await labels('API-GQL-006 - Order');
   await graphql<{ clearCart: boolean }>(request, testInfo, 'mutation { clearCart }');
   let orderId: string | undefined;
+  let productId: number | undefined;
   try {
-    const inventory = await graphql<{
-      products: { products: Array<{ id: string; stock: number }> };
-    }>(request, testInfo, 'query { products(page: 1, limit: 100) { products { id stock } } }');
-    const product = inventory.data!.products.products.find(({ stock }) => stock >= 1);
-    expect(product).toBeTruthy();
+    const product = await productService.createProduct({
+      name: uniqueProductName('graphql-order'),
+      ...teachingData.product,
+    });
+    productId = product.id;
     await graphql(
       request,
       testInfo,
       'mutation Add($id: Int!) { addToCart(product_id: $id, quantity: 1) { id } }',
-      { id: Number(product!.id) },
+      { id: product.id },
       'Add',
     );
     const preview = await graphql<{
-      cartSummary: { summary: { tax: number; shipping_cost: number; total: number } };
-    }>(request, testInfo, 'query { cartSummary { summary { tax shipping_cost total } } }');
+      cartSummary: { summary: { subtotal: number; tax: number; shipping_cost: number; total: number } };
+    }>(
+      request,
+      testInfo,
+      'query { cartSummary(tax_rate: 0.095, shipping_cost: 12) { summary { subtotal tax shipping_cost total } } }',
+    );
     const summary = preview.data!.cartSummary.summary;
+    const roundedTax = Number(summary.tax.toFixed(2));
 
     const created = await step('When: client creates an order from its current cart', () =>
       graphql<{ createOrder: { id: string; total: number; status: string; items: unknown[] } }>(
@@ -239,12 +246,12 @@ test('[API-GQL-006] Order mutation persists the cart and computed financial valu
               city: "Test City"
               state: "CA"
               zip_code: "90210"
-              country: "US"
+              country: "USA"
               is_fake: true
             }
             payment: {
               card_number: "4242424242424242"
-              expiry_date: "12/30"
+              expiry_date: "12/25"
               cvv: "123"
               brand: "Visa"
               payment_status: "pending"
@@ -252,12 +259,15 @@ test('[API-GQL-006] Order mutation persists the cart and computed financial valu
             financial: $financial
           ) { id total status items { id quantity } }
         }`,
-        { financial: { tax: summary.tax, shipping: summary.shipping_cost, tax_rate: 0.09, state: 'CA', country: 'US' } },
+        { financial: { tax: roundedTax, shipping: summary.shipping_cost, tax_rate: 0.095, state: 'CA', country: 'USA' } },
         'CreateOrder',
       ));
     expect(created.errors).toBeUndefined();
     orderId = created.data!.createOrder.id;
-    expect(created.data!.createOrder.total).toBeCloseTo(summary.total, 2);
+    expect(created.data!.createOrder.total).toBeCloseTo(
+      summary.subtotal + roundedTax + summary.shipping_cost,
+      2,
+    );
     expect(created.data!.createOrder.items).toHaveLength(1);
 
     const queried = await graphql<{ order: { id: string; status: string } }>(
@@ -275,6 +285,7 @@ test('[API-GQL-006] Order mutation persists the cart and computed financial valu
         request.delete(`/api/orders/${orderId}?force=true`, { headers: headers() }));
       expect([200, 404]).toContain(cleanup.status());
     }
+    if (productId) await productService.deleteProduct(productId);
   }
 });
 

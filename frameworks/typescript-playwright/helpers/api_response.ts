@@ -2,6 +2,18 @@ import type { APIResponse, TestInfo } from '@playwright/test';
 
 const GUARD_RULE_HEADER = 'x-qa-guard-rule';
 const INCIDENT_HEADER = 'x-qa-incident-id';
+let lastRequestStartedAt = 0;
+
+async function sendWithOptionalPacing(send: () => Promise<APIResponse>): Promise<APIResponse> {
+  const configured = Number(process.env.API_REQUEST_PACING_MS ?? 0);
+  const pacingMs = Number.isFinite(configured) ? Math.min(Math.max(configured, 0), 5_000) : 0;
+  if (pacingMs > 0) {
+    const waitMs = Math.max(0, lastRequestStartedAt + pacingMs - Date.now());
+    if (waitMs > 0) await new Promise((resolve) => setTimeout(resolve, waitMs));
+  }
+  lastRequestStartedAt = Date.now();
+  return send();
+}
 
 /** False means an intermediary answered before the application. */
 export function answeredByPlatform(response: APIResponse): boolean {
@@ -111,7 +123,7 @@ export async function guardedApi(
   testInfo: TestInfo,
   send: () => Promise<APIResponse>,
 ): Promise<APIResponse> {
-  const response = await withRateLimitRetry(send);
+  const response = await withRateLimitRetry(() => sendWithOptionalPacing(send));
   recordIncident(testInfo, response);
   recordLowBudget(testInfo, response);
   expectPlatformTrace(response);

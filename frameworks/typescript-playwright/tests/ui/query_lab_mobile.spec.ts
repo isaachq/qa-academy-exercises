@@ -3,6 +3,7 @@ import { teachingData } from '../../data/test_data.js';
 import { test, expect } from '../../fixtures/test.js';
 import { step } from '../../helpers/steps.js';
 import { uniqueProductName } from '../../helpers/unique_name.js';
+import type { ControlledOrder } from '../../services/order_service.js';
 import type { Product } from '../../services/product_service.js';
 
 async function labels(feature: string, story: string) {
@@ -38,19 +39,28 @@ test('[UI-QUERY-001] Query Lab queries products with a visible document', async 
   });
 });
 
-test('[UI-QUERY-002] Query Lab queries orders and uses the total field', async ({ page }) => {
+test('[UI-QUERY-002] Query Lab queries orders and uses the total field', async ({ page, orderService }) => {
   await labels('Query Lab UI', 'UI-QUERY-002 - Query orders');
-  await openLab(page);
-  await step('When: user switches to orders and sorts by total', async () => {
-    await page.getByTestId('query-lab-resource-orders').click();
-    await page.getByTestId('query-lab-sort-field').selectOption('total');
-    await runLab(page);
-  });
-  await step('Then: results and header use total rather than total_amount', async () => {
-    await expect(page.getByTestId('query-lab-transport-badge')).toContainText('QUERY');
-    await expect(page.getByTestId('query-lab-th-total')).toBeVisible();
-    await expect(page.getByTestId('query-lab-results')).not.toContainText('total_amount');
-  });
+  let controlled: ControlledOrder | undefined;
+  try {
+    controlled = await step('Given: a controlled order exists for the query result', () =>
+      orderService.createControlledOrder('ui-query-orders'));
+    await openLab(page);
+    await step('When: user switches to orders and sorts by total', async () => {
+      await page.getByTestId('query-lab-resource-orders').click();
+      await page.getByTestId('query-lab-sort-field').selectOption('total');
+      await runLab(page);
+    });
+    await step('Then: results and header use total rather than total_amount', async () => {
+      await expect(page.getByTestId('query-lab-transport-badge')).toContainText('QUERY');
+      await expect(page.getByTestId('query-lab-th-total')).toBeVisible();
+      await expect(page.getByTestId('query-lab-results')).toContainText(String(controlled!.order.id));
+      await expect(page.getByTestId('query-lab-results')).not.toContainText('total_amount');
+    });
+  } finally {
+    await step('Teardown: delete the controlled order and product', () =>
+      orderService.cleanup(controlled));
+  }
 });
 
 test('[UI-QUERY-003] Query Lab switches to POST override transport', async ({ page }) => {
@@ -127,7 +137,11 @@ test('[UI-MOBILE-002] Cart and modal preserve the responsive contract', async ({
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/store');
     await page.getByTestId('store-search').fill(product.name);
+    const addResponse = page.waitForResponse((response) =>
+      new URL(response.url()).pathname === '/api/cart' &&
+      response.request().method() === 'POST');
     await page.getByTestId(`product-add-to-cart-${product.id}`).click();
+    expect((await addResponse).status()).toBe(201);
     await page.getByTestId(`product-stock-info-${product.id}`).click();
     const modal = page.getByTestId('stock-info-modal');
     await expect(modal).toBeVisible();
