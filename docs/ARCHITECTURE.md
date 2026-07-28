@@ -84,8 +84,8 @@ graph TD
 
 ## 4. Key Architectural Patterns
 
-### Authentication State Injection
-UI tests bypass slow UI form logins (except for dedicated authentication test cases) by injecting pre-authenticated tokens directly into `localStorage` prior to navigation:
+### Authentication State Injection & Credential Management
+Credentials (`API_KEY`, `UI_EMAIL`, `UI_PASSWORD`) are loaded strictly from environment variables or GitHub secret stores. They are **never hardcoded or committed** to repository files:
 - `localStorage.api_token` = `API_KEY`
 - `localStorage.user_email` = `UI_EMAIL`
 - `localStorage['qa-academy-terms-consent-v1']` = `'accepted'`
@@ -110,3 +110,20 @@ All 4 frameworks are executed sequentially in GitHub Actions (`.github/workflows
 | `python-playwright` | Playwright | APIRequestContext | 4 | 73 | **77** |
 | `java-selenium-rest-assured` | Selenium | REST Assured | 4 | 73 | **77** |
 | `typescript-cypress` | Cypress | `cy.request()` | 4 | 16 | **20** |
+
+---
+
+## 6. Modular Automation Bypass & Public Execution Policy
+
+### Modular Bypass Header Handling
+All four frameworks implement **modular Vercel automation bypass logic**:
+- **Bypass Present**: If `VERCEL_AUTOMATION_BYPASS_SECRET` is set in `.env` or CI environment, the framework context automatically attaches the deployment protection headers:
+  - `x-vercel-protection-bypass: <SECRET>`
+  - `x-vercel-set-bypass-cookie: true`
+- **Bypass Omitted**: If `VERCEL_AUTOMATION_BYPASS_SECRET` is empty or omitted, these headers are dynamically omitted from all HTTP/browser contexts.
+
+> [!IMPORTANT]
+> **Book Tests vs. Extended Suite Execution Policy:**
+> 1. **Book Tests (4 Scenarios)**: `BOOK-TEST-UI-001` (Desktop), `BOOK-TEST-UI-001` (Mobile), `BOOK-TEST-UI-002`, and `BOOK-TEST-API-001` NEVER send bypass headers and can ALWAYS be executed together in full without issue.
+> 2. **Extended Suite (73 Scenarios)**: Attempting to run all 73 extended tests simultaneously in public environments without `VERCEL_AUTOMATION_BYPASS_SECRET` will trigger hosted Vercel traffic protection and rate-limiting. This will cause edge challenges and throttling, creating a **false perception that tests are flaky**.
+> 3. **Public Learners Execution**: Without the bypass secret, public users must run extended tests **1 test at a time** (or max batch of 1–3 tests filtered by Test ID) per command. Full extended suite execution is reserved for internal maintainers with `VERCEL_AUTOMATION_BYPASS_SECRET`.

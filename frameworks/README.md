@@ -33,21 +33,30 @@ Every project implements the core teaching scenarios (Book tests):
 
 In addition, every project executes the complete extended catalog: 36 UI cases and 37 API cases.
 
+## Modular Automation Bypass & Public Execution Policy
+
+All frameworks handle the Vercel automation bypass modularly:
+- If `VERCEL_AUTOMATION_BYPASS_SECRET` is configured in your environment, the framework automatically adds `x-vercel-protection-bypass` and `x-vercel-set-bypass-cookie` headers.
+- If `VERCEL_AUTOMATION_BYPASS_SECRET` is omitted, these headers are dynamically omitted.
+
+> [!WARNING]
+> **Avoid False Perceptions of Flakiness:**
+> - The **4 Book Scenarios** never send bypass headers and can always be run together.
+> - Running all **73 extended scenarios** in a public/hosted environment without `VERCEL_AUTOMATION_BYPASS_SECRET` will trigger hosted Vercel traffic protection challenges, causing requests to fail or be throttled, creating a **false perception that tests are flaky**.
+> - Public learners running without `VERCEL_AUTOMATION_BYPASS_SECRET` must run extended tests **1 test at a time** (or a maximum batch of 1–3 tests by ID). Full extended suite runs are reserved for internal maintainers with the bypass secret.
+
+## Credentials Security
+
+No real credentials are checked in or stored in repository files. Accounts are created manually or managed via GitHub Actions secrets. Copy `.env.example` to `.env` and supply `BASE_URL`, `API_KEY`, `UI_EMAIL`, and `UI_PASSWORD` locally before running live tests.
+
 ## Shared Report Steps
 
-The four projects use the same test titles and the same Allure step names, declared in each project's `helpers` layer (`helpers/steps.py`, `helpers/steps.ts`, `helpers/Steps.java`). Every navigation, action, and assertion is reported as its own step, and page objects and services emit nested steps so a failed run points at the exact step that failed instead of collapsing the scenario into a single block.
-
-The catalog and the rules for changing it are documented in [`docs/ch5_allure_step_catalog.md`](../docs/ch5_allure_step_catalog.md).
-
-All framework code, documentation, logs, test titles, and Allure evidence are written in English. Accounts are created manually. Copy each `.env.example` to `.env` and provide the existing account values before running live tests. `UI_PASSWORD` is used only by the dedicated valid-login cases; the rest of the UI suite prepares authenticated state from `API_KEY`.
+The four projects use the same test titles and Allure step names declared in each project's `helpers` layer (`helpers/steps.py`, `helpers/steps.ts`, `helpers/Steps.java`). The step catalog is documented in [`docs/ch5_allure_step_catalog.md`](../docs/ch5_allure_step_catalog.md).
 
 ## GitHub Actions Live Execution
 
-The workflow compiles, verifies, and runs all four projects sequentially (`max-parallel: 1`):
+The workflow compiles and runs all four projects sequentially (`max-parallel: 1`):
 
-1. Add `QA_ACADEMY_API_KEY`, `QA_ACADEMY_UI_EMAIL` and `QA_ACADEMY_UI_PASSWORD` as repository Actions secrets.
-2. Push or update a same-repository pull request, or open **Actions → Frameworks CI → Run workflow**.
-3. Open the run summary to download the generated self-contained Allure HTML report or its raw results.
-4. Extract the report artifact and open `index.html` directly; no local web server is required.
-
-All four frameworks execute sequentially so they cannot compete for the same cart, stock, or orders.
+1. Secrets (`QA_ACADEMY_API_KEY`, `QA_ACADEMY_UI_EMAIL`, `QA_ACADEMY_UI_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`) are injected via GitHub Actions secrets.
+2. Push or update a pull request, or open **Actions → Frameworks CI → Run workflow**.
+3. Open the run summary to download the Allure report artifact.

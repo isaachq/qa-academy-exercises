@@ -189,3 +189,14 @@ Every framework implements the core teaching scenarios:
 | **`python-playwright`** | 4 | 36 | 37 | **77** |
 | **`java-selenium-rest-assured`** | 4 | 36 | 37 | **77** |
 | **`typescript-cypress`** | 4 | 9 | 7 | **20** |
+
+---
+
+## 6. Public Execution Policy & Flakiness Awareness
+
+> [!WARNING]
+> **Vercel Automation Bypass & Extended Suite Rate Limits:**
+> - All frameworks implement **modular automation bypass handling**. When `VERCEL_AUTOMATION_BYPASS_SECRET` is set, headers `x-vercel-protection-bypass` and `x-vercel-set-bypass-cookie` are dynamically injected into requests. When omitted, these headers are not sent.
+> - The **4 Book Scenarios** run cleanly without bypass headers and can always be executed together.
+> - Running all **73 extended scenarios** against hosted Vercel deployments without `VERCEL_AUTOMATION_BYPASS_SECRET` will cause traffic protection to throttle and challenge incoming requests, creating a **false perception of flaky tests**.
+> - Public learners executing against hosted environments without the bypass secret must execute extended tests **1 test at a time** (or small batches of 1–3 tests by ID). Full extended suite execution is reserved for internal maintainers with the bypass secret.
