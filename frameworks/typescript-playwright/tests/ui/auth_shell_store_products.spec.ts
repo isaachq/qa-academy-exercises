@@ -15,6 +15,9 @@ async function labels(feature: string, story: string) {
 test('[UI-AUTH-001] Valid login preserves an authenticated session', async ({ browser }) => {
   await labels('Authentication UI', 'UI-AUTH-001 - Valid login');
   const context = await browser.newContext({ extraHTTPHeaders: vercelAutomationHeaders() });
+  // Seed the Vercel bypass cookie so the application's own XHRs reuse it,
+  // mirroring the cy.request pre-seed that the Cypress beforeEach performs.
+  await context.request.get(environment.baseUrl, { failOnStatusCode: false });
   await context.addInitScript(() => {
     localStorage.setItem('qa-academy-terms-consent-v1', 'accepted');
   });
@@ -25,7 +28,10 @@ test('[UI-AUTH-001] Valid login preserves an authenticated session', async ({ br
       await page.getByTestId('login-email').fill(environment.uiEmail);
       await page.getByTestId('login-continue').click();
       await expect(page.getByTestId('login-password')).toBeVisible();
-      await page.getByTestId('login-password').fill(environment.uiPassword);
+      // Use pressSequentially to fire individual keyboard events so that the
+      // application's React controlled input updates its state correctly before
+      // the form is submitted (matching Cypress's type('{selectall}{del}…') pattern).
+      await page.getByTestId('login-password').pressSequentially(environment.uiPassword);
       await page.getByTestId('login-submit').click();
     });
     await step('Then: the application opens an authenticated route and stores the token', async () => {
