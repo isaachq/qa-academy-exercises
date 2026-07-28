@@ -63,7 +63,12 @@ public class CartTest {
 
             Steps.step("Then: quantity set to 0 removes the item from cart", () -> {
                 assertEquals(200, service.updateCartItem(cartItemId, 0).statusCode());
-                assertEquals(404, service.getCartItem(cartItemId).statusCode());
+                Response cart = given().headers(Environment.automationHeaders())
+                        .header("Authorization", "Bearer " + Environment.required("API_KEY"))
+                        .get(Environment.BASE_URL + "/api/cart");
+                assertEquals(200, cart.statusCode());
+                List<?> items = cart.jsonPath().getList("data.items");
+                assertTrue(items == null || items.isEmpty(), "Cart items should be empty after removing item");
             });
         } finally {
             service.clearCart();

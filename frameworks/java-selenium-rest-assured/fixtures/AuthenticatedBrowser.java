@@ -28,6 +28,9 @@ public final class AuthenticatedBrowser {
             options.addArguments("--window-size=1440,900");
         }
         ChromeDriver driver = new ChromeDriver(options);
+        if (!mobile) {
+            driver.manage().window().setSize(new org.openqa.selenium.Dimension(1440, 900));
+        }
         if (!Environment.automationHeaders().isEmpty()) {
             driver.executeCdpCommand("Network.enable", Map.of());
             driver.executeCdpCommand(

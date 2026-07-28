@@ -48,7 +48,7 @@ export class StorePage {
 
   addToCart(productId: number): void {
     step(ACTIONS.storeAddToCart, () => {
-      cy.intercept('POST', '/api/cart').as('addToCart');
+      cy.intercept('POST', '**/api/cart').as('addToCart');
       cy.get(`[data-testid="product-add-to-cart-${productId}"]`).click();
       cy.wait('@addToCart').its('response.statusCode').should('be.oneOf', [200, 201]);
     });
