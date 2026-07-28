@@ -136,9 +136,9 @@ jobs:
           - java-selenium-rest-assured
     env:
       BASE_URL: https://qaacademyabc.xyz
-      API_KEY: ${{ secrets.QA_ACADEMY_API_KEY }}
-      UI_EMAIL: ${{ secrets.QA_ACADEMY_UI_EMAIL }}
-      UI_PASSWORD: ${{ secrets.QA_ACADEMY_UI_PASSWORD }}
+      API_KEY: ${{ secrets.QA_ACADEMY_API_KEY || secrets.API_KEY }}
+      UI_EMAIL: ${{ secrets.QA_ACADEMY_UI_EMAIL || secrets.UI_EMAIL }}
+      UI_PASSWORD: ${{ secrets.QA_ACADEMY_UI_PASSWORD || secrets.UI_PASSWORD }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       - name: Checkout

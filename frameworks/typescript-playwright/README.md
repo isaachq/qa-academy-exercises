@@ -62,7 +62,9 @@ npm run test:desktop
 
 In GitHub Actions, the extended TypeScript steps run only when the repository secret
 `VERCEL_AUTOMATION_BYPASS_SECRET` exists. Without it, the extended step is marked as skipped while
-the four Book executions continue to run.
+the four Book executions continue to run. Live credentials accept the existing
+`QA_ACADEMY_API_KEY` and `QA_ACADEMY_UI_EMAIL` names, with `API_KEY` and `UI_EMAIL` as fallbacks.
+The UI password may be supplied as `QA_ACADEMY_UI_PASSWORD` or `UI_PASSWORD`.
 
 ## Reports
 
