@@ -220,12 +220,33 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
     });
   });
 
+  /**
+   * Opens the order history and waits for its first page to land.
+   *
+   * The page mounts the filter form before the orders arrive and keeps the whole
+   * fieldset disabled while the request is in flight. `cy.get` only retries until
+   * the field exists, so typing right after `cy.visit` races the load and fails
+   * with "cy.type() failed because it targeted a disabled element". Waiting for
+   * the list response, and then for the form to accept input, removes the race.
+   */
+  const visitOrderHistory = (): void => {
+    cy.intercept('GET', '**/api/orders?*').as('ordersPage');
+    cy.visit('/orders');
+    cy.wait('@ordersPage');
+    cy.get('[data-testid="orders-search"]').should(($field) => {
+      expect(
+        $field.closest('fieldset[disabled]').length === 0 && !$field.is(':disabled'),
+        'order history filters accept input',
+      ).to.eq(true);
+    });
+  };
+
   it('[UI-ORDER-001] Opening details shows content and full-page navigation', () => {
     labels('Orders UI', 'UI-ORDER-001 - Open detail');
 
     orders.createControlledOrder('ui-order-detail').then((created) => {
       controlled = created;
-      cy.visit('/orders');
+      visitOrderHistory();
       fill('[data-testid="orders-search"]', String(created.order.id));
       cy.get(`[data-testid="order-view-${created.order.id}"]`).click();
 
@@ -245,7 +266,7 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
 
     orders.createControlledOrder('ui-order-filter', 'paid').then((created) => {
       controlled = created;
-      cy.visit('/orders');
+      visitOrderHistory();
 
       step('When: user searches the ID and filters by status', () => {
         fill('[data-testid="orders-search"]', String(created.order.id));
