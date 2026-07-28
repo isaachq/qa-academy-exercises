@@ -139,6 +139,7 @@ jobs:
       API_KEY: ${{ secrets.QA_ACADEMY_API_KEY }}
       UI_EMAIL: ${{ secrets.QA_ACADEMY_UI_EMAIL }}
       UI_PASSWORD: ${{ secrets.QA_ACADEMY_UI_PASSWORD }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -151,13 +152,30 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Run TypeScript Playwright scenarios
+      - name: Setup TypeScript Playwright
         if: matrix.framework == 'typescript-playwright'
         working-directory: frameworks/typescript-playwright
         run: |
           npm ci
           npx playwright install --with-deps chromium
-          npm test
+      - name: Run TypeScript Playwright Book scenarios
+        if: matrix.framework == 'typescript-playwright'
+        working-directory: frameworks/typescript-playwright
+        run: npm run test:book
+      - name: Run TypeScript Playwright extended scenarios
+        if: >-
+          matrix.framework == 'typescript-playwright' &&
+          env.VERCEL_AUTOMATION_BYPASS_SECRET != ''
+        working-directory: frameworks/typescript-playwright
+        run: npx playwright test --project=api --project=desktop-chromium
+      - name: Record skipped TypeScript Playwright extended scenarios
+        if: >-
+          matrix.framework == 'typescript-playwright' &&
+          env.VERCEL_AUTOMATION_BYPASS_SECRET == ''
+        run: |
+          echo "## TypeScript Playwright extended scenarios" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Skipped because VERCEL_AUTOMATION_BYPASS_SECRET is not configured." >> "$GITHUB_STEP_SUMMARY"
       - name: Run TypeScript Cypress scenarios
         if: matrix.framework == 'typescript-cypress'
         working-directory: frameworks/typescript-cypress

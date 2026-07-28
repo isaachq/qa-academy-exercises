@@ -60,6 +60,10 @@ npm run test:api
 npm run test:desktop
 ```
 
+In GitHub Actions, the extended TypeScript steps run only when the repository secret
+`VERCEL_AUTOMATION_BYPASS_SECRET` exists. Without it, the extended step is marked as skipped while
+the four Book executions continue to run.
+
 ## Reports
 
 ```bash
