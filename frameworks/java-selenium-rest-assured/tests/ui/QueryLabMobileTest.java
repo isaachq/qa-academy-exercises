@@ -6,6 +6,7 @@ import config.Environment;
 import data.TestData;
 import fixtures.AuthenticatedBrowser;
 import helpers.Steps;
+import helpers.Ui;
 import helpers.UniqueName;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
@@ -174,7 +175,7 @@ public class QueryLabMobileTest {
         try {
             Steps.step("Given: product is added to cart in mobile viewport", () -> {
                 driver.get(Environment.BASE_URL + "/store");
-                wait.until(ExpectedConditions.visibilityOfElementLocated(testId("store-search"))).sendKeys(productName);
+                Ui.type(driver, testId("store-search"), productName);
                 wait.until(ExpectedConditions.elementToBeClickable(testId("product-add-to-cart-" + productId))).click();
                 new StorePage(driver).expectReserved(productId, 1);
             });
@@ -187,7 +188,10 @@ public class QueryLabMobileTest {
                 WebElement modal = wait.until(ExpectedConditions.visibilityOfElementLocated(testId("stock-info-modal")));
                 assertTrue(modal.getRect().getX() + modal.getRect().getWidth() <= 412);
                 driver.get(Environment.BASE_URL + "/cart");
-                assertTrue(wait.until(ExpectedConditions.visibilityOfElementLocated(testId("cart-items"))).getText().contains(productName));
+                // The cart list mounts before its data arrives, so the row is read through a
+                // wait that keeps polling across the re-render instead of one fixed reference.
+                assertTrue(Ui.firstDisplayedAfterReloadIfNeeded(driver, By.cssSelector("[data-testid^='cart-item-']"))
+                        .getText().contains(productName));
                 long width = ((Number) ((JavascriptExecutor) driver).executeScript("return document.documentElement.scrollWidth")).longValue();
                 assertTrue(width <= 412, "Horizontal overflow: " + width);
             });

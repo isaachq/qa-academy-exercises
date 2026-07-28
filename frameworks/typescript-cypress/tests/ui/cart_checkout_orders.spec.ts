@@ -58,6 +58,21 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
       });
   };
 
+  /**
+   * Opens a page that reads the cart and waits for that read to land.
+   *
+   * Cart and checkout both mount before the cart response arrives: the list is empty and the
+   * form is disabled until then, and the re-render that follows detaches whatever Cypress had
+   * already queried. Waiting for the response first turns those races into a deterministic
+   * "the data is here" point, the same guarantee Playwright's auto-waiting gives the other
+   * three frameworks.
+   */
+  const visitWithCartLoaded = (path: string): void => {
+    cy.intercept('GET', '**/api/cart*').as('cartLoad');
+    cy.visit(path);
+    cy.wait('@cartLoad');
+  };
+
   /** Resolves the persistent cart item id the application rendered for a product. */
   const cartItemId = (productName: string): Cypress.Chainable<string> =>
     cy
@@ -75,7 +90,7 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
     });
     step('Then: the badge and cart show the same unit', () => {
       cy.get('[data-testid="header-cart-count"]').should('have.text', '1');
-      cy.visit('/cart');
+      visitWithCartLoaded('/cart');
       cartItemId(product!.name).then((id) => {
         cy.get(`[data-testid="cart-quantity-${id}"]`).should('have.text', '1');
       });
@@ -86,7 +101,7 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
     labels('Cart UI', 'UI-CART-002 - Change quantity');
 
     addControlledProductToCart('ui-cart-quantity').then((created) => {
-      cy.visit('/cart');
+      visitWithCartLoaded('/cart');
       cartItemId(created.name).then((id) => {
         step('When: user increases the persistent item quantity', () => {
           cy.get(`[data-testid="cart-increase-${id}"]`).click();
@@ -106,7 +121,7 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
     labels('Cart UI', 'UI-CART-003 - Native delete dialog');
 
     addControlledProductToCart('ui-cart-remove').then((created) => {
-      cy.visit('/cart');
+      visitWithCartLoaded('/cart');
       cartItemId(created.name).then((id) => {
         step('Then: the dialog contains the expected contract and is accepted', () => {
           cy.on('window:confirm', (message) => {
@@ -124,7 +139,7 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
     labels('Cart UI', 'UI-CART-004 - Clear cart');
 
     addControlledProductToCart('ui-cart-clear');
-    cy.visit('/cart');
+    visitWithCartLoaded('/cart');
 
     step('When: user confirms the native clear-cart dialog', () => {
       cy.on('window:confirm', (message) => {
@@ -143,7 +158,7 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
     labels('Checkout UI', 'UI-CHECKOUT-001 - Required validation');
 
     addControlledProductToCart('ui-checkout-required');
-    cy.visit('/checkout');
+    visitWithCartLoaded('/checkout');
 
     step('Then: empty fields expose errors and disable submission', () => {
       const fields = ['fullname', 'email', 'address', 'city', 'state', 'zip', 'card', 'expiry', 'cvv'];
@@ -158,7 +173,7 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
     labels('Checkout UI', 'UI-CHECKOUT-002 - Boundaries and negatives');
 
     addControlledProductToCart('ui-checkout-boundary');
-    cy.visit('/checkout');
+    visitWithCartLoaded('/checkout');
 
     step('When: user enters invalid characters, formats and boundaries', () => {
       fill('[data-testid="checkout-fullname"]', 'Invalid@Name');
@@ -184,7 +199,7 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
     labels('Checkout UI', 'UI-CHECKOUT-003 - Create order');
 
     addControlledProductToCart('ui-checkout-order').then((created) => {
-      cy.visit('/checkout');
+      visitWithCartLoaded('/checkout');
       step('When: testing details are completed and the order is submitted', () => {
         checkout.placeOrder().then((id) => {
           orderId = id;
@@ -203,7 +218,7 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
 
     addControlledProductToCart('ui-checkout-modal');
     cy.viewport(390, 844);
-    cy.visit('/checkout');
+    visitWithCartLoaded('/checkout');
     cy.get('[data-testid="checkout-more-about-shipping-taxes"]').click();
 
     step('Then: the modal fits inside the mobile viewport and closes', () => {
@@ -220,12 +235,33 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
     });
   });
 
+  /**
+   * Opens the order history and waits for its first page to land.
+   *
+   * The page mounts the filter form before the orders arrive and keeps the whole
+   * fieldset disabled while the request is in flight. `cy.get` only retries until
+   * the field exists, so typing right after `cy.visit` races the load and fails
+   * with "cy.type() failed because it targeted a disabled element". Waiting for
+   * the list response, and then for the form to accept input, removes the race.
+   */
+  const visitOrderHistory = (): void => {
+    cy.intercept('GET', '**/api/orders?*').as('ordersPage');
+    cy.visit('/orders');
+    cy.wait('@ordersPage');
+    cy.get('[data-testid="orders-search"]').should(($field) => {
+      expect(
+        $field.closest('fieldset[disabled]').length === 0 && !$field.is(':disabled'),
+        'order history filters accept input',
+      ).to.eq(true);
+    });
+  };
+
   it('[UI-ORDER-001] Opening details shows content and full-page navigation', () => {
     labels('Orders UI', 'UI-ORDER-001 - Open detail');
 
     orders.createControlledOrder('ui-order-detail').then((created) => {
       controlled = created;
-      cy.visit('/orders');
+      visitOrderHistory();
       fill('[data-testid="orders-search"]', String(created.order.id));
       cy.get(`[data-testid="order-view-${created.order.id}"]`).click();
 
@@ -245,7 +281,7 @@ describe('Chapter 5 extended UI catalog: cart, checkout and orders', () => {
 
     orders.createControlledOrder('ui-order-filter', 'paid').then((created) => {
       controlled = created;
-      cy.visit('/orders');
+      visitOrderHistory();
 
       step('When: user searches the ID and filters by status', () => {
         fill('[data-testid="orders-search"]', String(created.order.id));
