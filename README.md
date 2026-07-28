@@ -1,20 +1,19 @@
 # QA Academy Exercises
 
-Companion exercises and automation examples for QA Academy Platform.
+Companion exercises and automation examples for QA Academy Platform (`https://qaacademyabc.xyz`).
 
-## Repository areas
+## Repository Structure
 
-- [`docs/`](docs/) contains the Chapter 5 planning, scenario catalog, the shared Allure step
-  catalog and editorial guidance.
-- [`frameworks/`](frameworks/) contains four comparable, executable automation projects.
+- [`docs/`](docs/) — Architecture guidelines ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)), Allure step catalog ([docs/ch5_allure_step_catalog.md](docs/ch5_allure_step_catalog.md)), and complete UI/API test catalog ([docs/ch5_ui_api_test_catalog.md](docs/ch5_ui_api_test_catalog.md)).
+- [`frameworks/`](frameworks/) — Four comparable, executable automation projects (`python-playwright`, `typescript-playwright`, `java-selenium-rest-assured`, `typescript-cypress`).
 
-The framework implementations combine the teaching scope in this repository with the current
-[platform selector and API contracts](https://github.com/isaachq/qa-academy-platform/tree/main/docs).
-The directory name `frameworks` is preserved as requested for this edition.
+## Framework Architecture
 
-## Hosted test execution
+All four framework projects implement an identical 8-layer architecture:
+`tests/ui`, `tests/api`, `pages`, `services`, `fixtures`, `helpers`, `data`, `config`.
 
-The extended public tests target a Vercel-hosted environment with traffic protection. Public users
-must run one test, or a maximum batch of three tests, by traceability ID. Complete extended suites
-are reserved for internal maintainer validation. See the
-[TypeScript Playwright execution policy](frameworks/typescript-playwright/README.md#public-execution-policy).
+For a full technical overview and Mermaid architecture diagram, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Sequential Execution in CI
+
+GitHub Actions executes the four frameworks sequentially (`max-parallel: 1`) to ensure data isolation without resource contention.
