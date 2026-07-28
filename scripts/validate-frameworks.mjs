@@ -38,9 +38,33 @@ const pendingApiIds = [
  * declared list. They are validated by looking for one executable test per
  * traceability ID under `tests/`.
  */
-const executableProjects = new Set(['typescript-playwright', 'typescript-cypress']);
+const executableProjects = new Set([
+  'typescript-playwright',
+  'typescript-cypress',
+  'python-playwright',
+]);
+/** Source extension and per-ID title pattern used to read an executable catalog. */
+const executableSources = {
+  'typescript-playwright': {
+    extension: '.ts',
+    // `test(` is Playwright's runner, `it(` is Cypress's; both must carry the
+    // traceability ID as the first thing in the title.
+    title: (id) => new RegExp(`(test|it)\\(\\s*['"\`]\\[${id}\\]`),
+    markers: ['allure.feature(', 'allure.story(', 'step('],
+  },
+  'typescript-cypress': {
+    extension: '.ts',
+    title: (id) => new RegExp(`(test|it)\\(\\s*['"\`]\\[${id}\\]`),
+    markers: ['allure.feature(', 'allure.story(', 'step('],
+  },
+  'python-playwright': {
+    extension: '.py',
+    // pytest takes the reported name from the `@allure.title` decorator.
+    title: (id) => new RegExp(`allure\\.title\\(\\s*['"]\\[${id}\\]`),
+    markers: ['allure.feature(', 'allure.story(', 'step('],
+  },
+};
 const extendedCatalogFiles = {
-  'python-playwright': ['data/extended_catalog.py'],
   'java-selenium-rest-assured': ['data/ExtendedCatalog.java'],
 };
 const readFilesRecursively = (directory, extension) =>
@@ -187,8 +211,9 @@ for (const project of projects) {
   }
 
   const executable = executableProjects.has(project);
+  const executableSource = executableSources[project];
   const extendedSource = executable
-    ? readFilesRecursively(join(base, 'tests'), '.ts')
+    ? readFilesRecursively(join(base, 'tests'), executableSource.extension)
     : extendedCatalogFiles[project]
       .map((file) => {
         const path = join(base, file);
@@ -200,18 +225,15 @@ for (const project of projects) {
       })
       .join('\n');
   for (const id of [...pendingUiIds, ...pendingApiIds]) {
-    // `test(` is Playwright's runner, `it(` is Cypress's; both must carry the
-    // traceability ID as the first thing in the title.
-    const executableTitle = new RegExp(`(test|it)\\(\\s*['"\`]\\[${id}\\]`);
     const declared = executable
-      ? executableTitle.test(extendedSource)
+      ? executableSource.title(id).test(extendedSource)
       : extendedSource.includes(id);
     if (!declared) {
       failures.push(`${project}: missing ${executable ? 'executable test' : 'extended catalog declaration'} for ${id}`);
     }
   }
   if (executable) {
-    for (const marker of ['allure.feature(', 'allure.story(', 'step(']) {
+    for (const marker of executableSource.markers) {
       if (!extendedSource.includes(marker)) {
         failures.push(`${project}: executable coverage does not declare ${marker}`);
       }

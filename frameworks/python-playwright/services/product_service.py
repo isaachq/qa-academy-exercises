@@ -4,6 +4,7 @@ import allure
 import requests
 
 from config.environment import environment
+from helpers.api_response import observed_api
 from helpers.steps import Actions, step
 
 
@@ -19,17 +20,23 @@ class ProductService:
         )
 
     def request(self, method: str, path: str, **kwargs: Any) -> requests.Response:
-        try:
-            return self.session.request(
-                method,
-                f"{environment.base_url}{path}",
-                timeout=20,
-                **kwargs,
-            )
-        except requests.RequestException as error:
-            raise RuntimeError(
-                f"{method} {path} failed with {type(error).__name__}; credentials were redacted"
-            ) from None
+        def send() -> requests.Response:
+            try:
+                return self.session.request(
+                    method,
+                    f"{environment.base_url}{path}",
+                    timeout=20,
+                    **kwargs,
+                )
+            except requests.RequestException as error:
+                raise RuntimeError(
+                    f"{method} {path} failed with {type(error).__name__}; "
+                    "credentials were redacted"
+                ) from None
+
+        # Setup and teardown traffic is paced, retried on application throttling
+        # and annotated with its incident ID. Contract assertions stay in the tests.
+        return observed_api(send)
 
     def clear_cart(self) -> None:
         with step(Actions.API_CLEAR_CART):

@@ -70,9 +70,9 @@ class StorePage:
             expect(row).to_contain_text(str(quantity))
             expect(row).to_contain_text(status)
 
-    def expect_mobile_modal_contract(self) -> None:
+    def expect_mobile_modal_contract(self, test_id: str = "order-history-modal") -> None:
         with step(Actions.STORE_VERIFY_MOBILE_MODAL):
-            modal = self.page.get_by_test_id("order-history-modal")
+            modal = self.page.get_by_test_id(test_id)
             backdrop = modal.locator("..")
             box = modal.bounding_box()
             viewport = self.page.viewport_size

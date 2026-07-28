@@ -8,6 +8,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public final class StorePage extends BasePage {
     public StorePage(WebDriver driver) { super(driver); }
@@ -30,7 +31,25 @@ public final class StorePage extends BasePage {
 
     public Map<String, Integer> readInventory(int id) {
         return Steps.stepReturning(Steps.Actions.STORE_READ_INVENTORY, () -> {
-            visible("product-stock-info-" + id).click();
+            // Retry the click until the modal opens.  On mobile emulation the first
+            // click may land during a brief post-navigation card transition and be
+            // absorbed without opening the modal; scrolling the button to the centre
+            // of the viewport before each attempt mirrors Playwright's actionability
+            // checks and allows the transition to finish between polls.
+            wait.until(d -> {
+                try {
+                    WebElement btn = ExpectedConditions.elementToBeClickable(
+                            testId("product-stock-info-" + id)).apply(d);
+                    if (btn == null) return null;
+                    ((JavascriptExecutor) d).executeScript(
+                            "arguments[0].scrollIntoView({block:'center'})", btn);
+                    btn.click();
+                    return ExpectedConditions.visibilityOfElementLocated(
+                            testId("stock-info-modal")).apply(d);
+                } catch (org.openqa.selenium.StaleElementReferenceException e) {
+                    return null;
+                }
+            });
             String text = visible("stock-info-modal").getText();
             Map<String, Integer> values = Map.of(
                     "stock", numberAfter(text, "Total Stock"),
