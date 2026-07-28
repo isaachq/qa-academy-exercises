@@ -25,6 +25,10 @@ public abstract class BasePage {
         return wait.until(ExpectedConditions.visibilityOfElementLocated(testId(id)));
     }
 
+    protected WebElement present(String id) {
+        return wait.until(ExpectedConditions.presenceOfElementLocated(testId(id)));
+    }
+
     protected void open(String path) {
         driver.get(Environment.BASE_URL + path);
     }
