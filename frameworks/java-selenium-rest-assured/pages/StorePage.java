@@ -19,7 +19,9 @@ public final class StorePage extends BasePage {
 
     public void searchProduct(int id, String name) {
         Steps.step(Steps.Actions.STORE_SEARCH, () -> {
-            visible("store-search").sendKeys(name);
+            WebElement input = visible("store-search");
+            input.clear();
+            input.sendKeys(name);
             visible("product-add-to-cart-" + id);
         });
     }

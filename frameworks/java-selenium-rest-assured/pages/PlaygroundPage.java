@@ -7,6 +7,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.interactions.Actions;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -75,7 +76,7 @@ public final class PlaygroundPage extends BasePage {
     }
 
     public void expectContactFormValidationAndBoundaries() {
-        visible("open-contact-modal").click();
+        wait.until(ExpectedConditions.elementToBeClickable(testId("open-contact-modal"))).click();
         visible("contact-submit").click();
         visible("contact-name-error"); visible("contact-email-error"); visible("contact-message-error");
         visible("contact-name").sendKeys("Boundary User");
@@ -93,7 +94,8 @@ public final class PlaygroundPage extends BasePage {
     }
 
     public void expectDataTableContract() {
-        visible("open-datatable").click(); visible("datatable-modal");
+        wait.until(ExpectedConditions.elementToBeClickable(testId("open-datatable"))).click();
+        visible("datatable-modal");
         By rows = By.cssSelector("[data-testid^='datatable-row-']");
         wait.until(d -> d.findElements(rows).size() == 100);
         WebElement search = visible("datatable-search");
@@ -106,6 +108,7 @@ public final class PlaygroundPage extends BasePage {
 
     public void expectIframeHoverAndNewTab() {
         driver.switchTo().frame(visible("example-iframe"));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
         if (driver.findElement(By.tagName("body")).getText().isBlank()) throw new AssertionError("iframe is empty");
         driver.switchTo().defaultContent();
         new Actions(driver).moveToElement(visible("hover-button-1")).perform(); visible("hover-span");
@@ -122,7 +125,7 @@ public final class PlaygroundPage extends BasePage {
         try {
             Path upload = Files.createTempFile("playground-upload", ".txt");
             Files.writeString(upload, "traceable playground upload");
-            visible("file-upload-input").sendKeys(upload.toAbsolutePath().toString());
+            present("file-upload-input").sendKeys(upload.toAbsolutePath().toString());
             visible("uploading-state"); visible("upload-success");
             Files.deleteIfExists(upload);
         } catch (java.io.IOException error) { throw new AssertionError(error); }
