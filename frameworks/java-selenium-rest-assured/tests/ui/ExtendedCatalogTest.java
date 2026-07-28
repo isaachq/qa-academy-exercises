@@ -5,9 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import config.Environment;
 import data.ExtendedCatalog;
+import data.TestData;
 import fixtures.AuthenticatedBrowser;
+import helpers.UniqueName;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -15,6 +18,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import services.ProductService;
 
 public class ExtendedCatalogTest {
     private static final List<String> SECTION_IDS = List.of(
@@ -34,21 +38,36 @@ public class ExtendedCatalogTest {
     }
 
     private void run(ExtendedCatalog.UiCase scenario) {
-        WebDriver driver = AuthenticatedBrowser.create(scenario.mobile());
+        ProductService service = new ProductService();
+        Integer productId = null;
+        if (scenario.id().startsWith("UI-CHECKOUT-")) {
+            service.clearCart();
+            Map<String, Object> product = service.createProduct(
+                    ProductService.newProduct(UniqueName.product(), TestData.PRODUCT));
+            productId = ((Number) product.get("id")).intValue();
+            int status = service.addToCart(productId, 1).statusCode();
+            if (status != 200 && status != 201) {
+                throw new AssertionError("Add to cart returned " + status);
+            }
+        }
+
+        WebDriver driver = null;
         try {
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+            driver = AuthenticatedBrowser.create(scenario.mobile());
+            WebDriver activeDriver = driver;
+            WebDriverWait wait = new WebDriverWait(activeDriver, Duration.ofSeconds(15));
             if (scenario.id().equals("UI-SHELL-001")) {
-                ((JavascriptExecutor) driver).executeScript(
+                ((JavascriptExecutor) activeDriver).executeScript(
                         "localStorage.removeItem('qa-academy-terms-consent-v1')");
-                driver.get(Environment.BASE_URL + scenario.route());
+                activeDriver.get(Environment.BASE_URL + scenario.route());
                 wait.until(d -> d.findElement(testId("terms-gate-dialog")).isDisplayed());
-                driver.findElement(testId("terms-gate-accept")).click();
-                assertEquals("accepted", ((JavascriptExecutor) driver).executeScript(
+                activeDriver.findElement(testId("terms-gate-accept")).click();
+                assertEquals("accepted", ((JavascriptExecutor) activeDriver).executeScript(
                         "return localStorage.getItem('qa-academy-terms-consent-v1')"));
                 return;
             }
 
-            driver.get(Environment.BASE_URL + scenario.route());
+            activeDriver.get(Environment.BASE_URL + scenario.route());
             if (scenario.id().equals("UI-SHELL-002")) {
                 wait.until(d -> d.findElement(testId("mobile-menu-open"))).click();
             }
@@ -58,7 +77,13 @@ public class ExtendedCatalogTest {
                 assertNotNull(wait.until(d -> d.findElement(testId(selector))));
             }
         } finally {
-            driver.quit();
+            if (driver != null) {
+                driver.quit();
+            }
+            if (productId != null) {
+                service.clearCart();
+                service.deleteProduct(productId);
+            }
         }
     }
 

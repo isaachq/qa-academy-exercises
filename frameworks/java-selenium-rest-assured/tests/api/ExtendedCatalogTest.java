@@ -5,15 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import config.Environment;
+import data.TestData;
 import data.ExtendedCatalog;
+import helpers.UniqueName;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
+import services.ProductService;
 
 public class ExtendedCatalogTest {
     @TestFactory
@@ -24,6 +28,11 @@ public class ExtendedCatalogTest {
     }
 
     private void run(ExtendedCatalog.ApiCase scenario) {
+        if (scenario.id().equals("API-CART-002")) {
+            runCartItemLifecycle();
+            return;
+        }
+
         String body = scenario.body();
         if (scenario.id().equals("API-AUTH-001")) {
             String password = System.getenv("UI_PASSWORD");
@@ -33,7 +42,8 @@ public class ExtendedCatalogTest {
                     + "\",\"password\":\"" + password + "\"}";
         }
 
-        RequestSpecification request = given().contentType(ContentType.JSON);
+        RequestSpecification request = given().headers(Environment.automationHeaders())
+                .contentType(ContentType.JSON);
         if (!scenario.publicRequest()) {
             request.header("Authorization", "Bearer " + Environment.required("API_KEY"));
         }
@@ -59,6 +69,30 @@ public class ExtendedCatalogTest {
         }
         if (scenario.id().equals("API-GQL-002")) {
             assertTrue(response.jsonPath().getList("errors", Map.class).size() > 0);
+        }
+    }
+
+    private void runCartItemLifecycle() {
+        ProductService service = new ProductService();
+        Integer productId = null;
+        service.clearCart();
+        try {
+            Map<String, Object> product = service.createProduct(
+                    ProductService.newProduct(UniqueName.product(), TestData.PRODUCT));
+            productId = ((Number) product.get("id")).intValue();
+            Response added = service.addToCart(productId, 1);
+            assertTrue(List.of(200, 201).contains(added.statusCode()), added.asString());
+            int cartItemId = added.jsonPath().getInt("data.id");
+            Response updated = service.updateCartItem(cartItemId, 2);
+            assertEquals(200, updated.statusCode(), updated.asString());
+            assertEquals(2, updated.jsonPath().getInt("data.quantity"));
+            assertEquals(200, service.updateCartItem(cartItemId, 0).statusCode());
+            assertEquals(404, service.getCartItem(cartItemId).statusCode());
+        } finally {
+            service.clearCart();
+            if (productId != null) {
+                service.deleteProduct(productId);
+            }
         }
     }
 }

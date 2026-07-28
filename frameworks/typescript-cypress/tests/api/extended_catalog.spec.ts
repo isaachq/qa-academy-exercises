@@ -1,4 +1,8 @@
 import { environment } from '../../config/environment';
+import type {
+  NodeApiRequest,
+  NodeApiResponse,
+} from '../../helpers/node_api_request';
 
 type ApiCase = [id: string, title: string, method: string, path: string, expected: number[], body?: Cypress.RequestBody, publicRequest?: boolean, override?: boolean];
 const productQuery = { filters: {}, sort: { field: 'id', direction: 'asc' }, pagination: { page: 1, limit: 2 } };
@@ -15,7 +19,6 @@ const cases: ApiCase[] = [
   ['API-PRODUCT-004', 'Product permissions', 'GET', '/api/products?permission=N_DELETE&limit=1', [200]],
   ['API-PRODUCT-005', 'Product categories and stock', 'GET', '/api/products/categories', [200]],
   ['API-CART-001', 'Add and merge cart item', 'GET', '/api/cart', [200]],
-  ['API-CART-002', 'Update and remove cart item', 'GET', '/api/cart/all', [200]],
   ['API-CART-003', 'Bulk update cart', 'PATCH', '/api/cart/bulk', [200, 400], { updates: [] }],
   ['API-CART-004', 'Cart summary', 'GET', '/api/cart/summary', [200]],
   ['API-CART-005', 'Insufficient cart stock', 'POST', '/api/cart', [400, 404], { product_id: -1, quantity: 2147483647 }],
@@ -44,7 +47,92 @@ const cases: ApiCase[] = [
   ['API-GQL-007', 'Search GraphQL orders', 'POST', '/api/graphql', [200], { query: 'query Search { searchOrders(filters:{search:"framework"},page:1,limit:2){orders{id total} pagination{page total}}}', operationName: 'Search', variables: {} }],
 ];
 
+const apiRequest = (request: NodeApiRequest): Cypress.Chainable<NodeApiResponse> =>
+  cy.task<NodeApiResponse>('apiRequest', request, { log: false });
+
 describe('Chapter 5 extended API catalog', () => {
+  let cleanupProductId: number | undefined;
+
+  afterEach(() => {
+    if (!cleanupProductId) return;
+    const headers = { Authorization: `Bearer ${environment.apiKey()}` };
+    apiRequest({ method: 'DELETE', url: '/api/cart', headers });
+    apiRequest({
+      method: 'DELETE',
+      url: `/api/products/${cleanupProductId}?force=true`,
+      headers,
+    }).then((response) => {
+      expect([200, 404]).to.include(response.status);
+      cleanupProductId = undefined;
+    });
+  });
+
+  it('[API-CART-002] Update and remove cart item', () => {
+    const headers = {
+      Authorization: `Bearer ${environment.apiKey()}`,
+      'Content-Type': 'application/json',
+    };
+    let cartItemId: number;
+
+    apiRequest({ method: 'DELETE', url: '/api/cart', headers })
+      .then((response) => {
+        expect(response.status).to.eq(200);
+        return apiRequest({
+          method: 'POST',
+          url: '/api/products',
+          headers,
+          body: {
+            name: `cypress-api-cart-${Date.now()}`,
+            description: 'Controlled Cypress API cart lifecycle product.',
+            price: 19.95,
+            stock: 5,
+            category: 'Sample',
+          },
+        });
+      })
+      .then((response) => {
+        expect(response.status).to.eq(201);
+        cleanupProductId = (response.body as { data: { id: number } }).data.id;
+        return apiRequest({
+          method: 'POST',
+          url: '/api/cart',
+          headers,
+          body: { product_id: cleanupProductId, quantity: 1 },
+        });
+      })
+      .then((response) => {
+        expect(response.status).to.eq(201);
+        cartItemId = (response.body as { data: { id: number } }).data.id;
+        return apiRequest({
+          method: 'PATCH',
+          url: `/api/cart/${cartItemId}`,
+          headers,
+          body: { quantity: 2 },
+        });
+      })
+      .then((response) => {
+        expect(response.status).to.eq(200);
+        expect((response.body as { data: { quantity: number } }).data.quantity).to.eq(2);
+        return apiRequest({
+          method: 'PATCH',
+          url: `/api/cart/${cartItemId}`,
+          headers,
+          body: { quantity: 0 },
+        });
+      })
+      .then((response) => {
+        expect(response.status).to.eq(200);
+        return apiRequest({
+          method: 'GET',
+          url: `/api/cart/${cartItemId}`,
+          headers,
+        });
+      })
+      .then((response) => {
+        expect(response.status).to.eq(404);
+      });
+  });
+
   for (const [id, title, method, path, expected, configuredBody, publicRequest, override] of cases) {
     it(`[${id}] ${title}`, function () {
       let body = configuredBody;
@@ -56,9 +144,11 @@ describe('Chapter 5 extended API catalog', () => {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (!publicRequest) headers.Authorization = `Bearer ${environment.apiKey()}`;
       if (override) headers['X-HTTP-Method-Override'] = 'QUERY';
-      cy.request({ method, url: path, body, headers, failOnStatusCode: false }).then((response) => {
+      apiRequest({ method, url: path, body, headers }).then((response) => {
         expect(expected).to.include(response.status);
-        if (id === 'API-GQL-002') expect(response.body.errors).to.have.length.greaterThan(0);
+        if (id === 'API-GQL-002') {
+          expect((response.body as { errors: unknown[] }).errors).to.have.length.greaterThan(0);
+        }
         if (id === 'API-QUERY-004') expect(response.headers.allow).to.contain('QUERY');
       });
     });

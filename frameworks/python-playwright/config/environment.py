@@ -25,5 +25,15 @@ class Environment:
     def ui_email(self) -> str:
         return required("UI_EMAIL")
 
+    @property
+    def automation_headers(self) -> dict[str, str]:
+        secret = os.getenv("VERCEL_AUTOMATION_BYPASS_SECRET", "").strip()
+        if not secret:
+            return {}
+        return {
+            "x-vercel-protection-bypass": secret,
+            "x-vercel-set-bypass-cookie": "true",
+        }
+
 
 environment = Environment()

@@ -11,7 +11,11 @@ class ProductService:
     def __init__(self) -> None:
         self.session = requests.Session()
         self.session.headers.update(
-            {"Authorization": f"Bearer {environment.api_key}", "Content-Type": "application/json"}
+            {
+                "Authorization": f"Bearer {environment.api_key}",
+                "Content-Type": "application/json",
+                **environment.automation_headers,
+            }
         )
 
     def request(self, method: str, path: str, **kwargs: Any) -> requests.Response:
@@ -30,6 +34,18 @@ class ProductService:
     def clear_cart(self) -> None:
         with step(Actions.API_CLEAR_CART):
             self.request("DELETE", "/api/cart")
+
+    def add_to_cart(self, product_id: int, quantity: int = 1) -> dict[str, Any]:
+        response = self.request(
+            "POST", "/api/cart", json={"product_id": product_id, "quantity": quantity}
+        )
+        assert response.status_code in (200, 201), response.text
+        return response.json()
+
+    def update_cart_item(self, product_id: int, quantity: int) -> requests.Response:
+        return self.request(
+            "PATCH", f"/api/cart/{product_id}", json={"quantity": quantity}
+        )
 
     def create_product(self, product: dict[str, Any]) -> dict[str, Any]:
         with step(Actions.API_CREATE_PRODUCT):

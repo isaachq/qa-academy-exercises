@@ -5,6 +5,9 @@ import requests
 
 from config.environment import environment
 from data.extended_catalog import API_CASES
+from data.test_data import PRODUCT
+from helpers.unique_name import unique_product_name
+from services.product_service import ProductService
 
 
 @pytest.mark.parametrize(
@@ -21,7 +24,29 @@ def test_extended_api_catalog(
     configured_body: object,
     public_request: bool,
     override: bool,
+    product_service: ProductService,
 ) -> None:
+    if case_id == "API-CART-002":
+        product = None
+        product_service.clear_cart()
+        try:
+            product = product_service.create_product(
+                {"name": unique_product_name(), **PRODUCT}
+            )
+            cart_item = product_service.add_to_cart(product["id"])["data"]
+            updated = product_service.update_cart_item(cart_item["id"], 2)
+            assert updated.status_code == 200, updated.text
+            assert updated.json()["data"]["quantity"] == 2
+            removed = product_service.update_cart_item(cart_item["id"], 0)
+            assert removed.status_code == 200, removed.text
+            missing = product_service.request("GET", f"/api/cart/{cart_item['id']}")
+            assert missing.status_code == 404, missing.text
+        finally:
+            product_service.clear_cart()
+            if product:
+                product_service.delete_product(product["id"])
+        return
+
     body = configured_body
     if case_id == "API-AUTH-001":
         password = os.getenv("UI_PASSWORD")
@@ -29,7 +54,7 @@ def test_extended_api_catalog(
             pytest.skip("UI_PASSWORD is required for the valid login contract")
         body = {"email": environment.ui_email, "password": password}
 
-    headers = {"Content-Type": "application/json"}
+    headers = {"Content-Type": "application/json", **environment.automation_headers}
     if not public_request:
         headers["Authorization"] = f"Bearer {environment.api_key}"
     if override:
