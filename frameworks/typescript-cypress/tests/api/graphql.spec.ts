@@ -331,8 +331,15 @@ describe('Chapter 5 extended API catalog: GraphQL', () => {
         expect(result.success, 'success flag').to.eq(true);
         expect(result.pagination, 'pagination').to.include({ page: 1, limit: 2 });
         expect(result.filters_applied.min_total, 'applied filter').to.eq(0);
-        expect(result.summary.total_orders, 'summary total').to.eq(result.pagination.total);
         expect(result.data, 'returned rows').to.have.length.of.at.most(2);
+        // The API's `summary` block is computed over the returned page, not the
+        // full filtered set, so it always matches the current page's row count
+        // and their sum -- it is intentionally independent of `pagination.total`.
+        expect(result.summary.total_orders, 'summary total').to.eq(result.data.length);
+        expect(result.summary.total_amount, 'summary amount').to.be.closeTo(
+          result.data.reduce((sum, order) => sum + order.total, 0),
+          0.01,
+        );
       });
     });
   });

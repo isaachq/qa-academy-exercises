@@ -159,9 +159,19 @@ export class PlaygroundPage {
 
   expectDownloadAndUpload(): void {
     step('Playground: download the CSV artifact', () => {
+      // `cy.task` resolves once and is not retried by `.should()`, so polling
+      // by hand avoids a race between the assertion and the browser finishing
+      // the write to disk.
+      const pollForCsv = (retriesLeft: number): Cypress.Chainable<string[]> =>
+        cy.task<string[]>('listDownloads').then((files) => {
+          const hasCsv = files.some((file) => file.endsWith('.csv'));
+          if (hasCsv || retriesLeft <= 0) return cy.wrap(files, { log: false });
+          return cy.wait(500, { log: false }).then(() => pollForCsv(retriesLeft - 1));
+        });
+
       cy.task('clearDownloads');
       cy.get('[data-testid="download-csv"]').click();
-      cy.task<string[]>('listDownloads', null, { timeout: 15_000 }).should((files) => {
+      pollForCsv(30).then((files) => {
         expect(files.filter((file) => file.endsWith('.csv')), 'downloaded CSV files')
           .to.have.length.greaterThan(0);
       });
