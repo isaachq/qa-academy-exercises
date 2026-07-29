@@ -1,4 +1,3 @@
-import { vercelAutomationHeaders } from '../config/environment';
 import type { NodeApiRequest, NodeApiResponse } from './node_api_request';
 
 const GUARD_RULE_HEADER = 'x-qa-guard-rule';
@@ -74,7 +73,7 @@ export function expectPlatformTrace(response: ApiResponse, url: string): void {
 
 const send = (options: ApiOptions): Cypress.Chainable<ApiResponse> => {
   const method = (options.method ?? 'GET').toUpperCase();
-  const headers = { ...vercelAutomationHeaders(), ...options.headers };
+  const headers = { ...options.headers };
 
   if (EXTENSION_METHODS.has(method)) {
     const request: NodeApiRequest = { method, url: options.url, headers, body: options.body };

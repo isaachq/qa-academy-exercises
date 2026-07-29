@@ -125,7 +125,6 @@ jobs:
       API_KEY: ${{ secrets.QA_ACADEMY_API_KEY || secrets.API_KEY }}
       UI_EMAIL: ${{ secrets.QA_ACADEMY_UI_EMAIL || secrets.UI_EMAIL }}
       UI_PASSWORD: ${{ secrets.QA_ACADEMY_UI_PASSWORD || secrets.UI_PASSWORD }}
-      HAS_VERCEL_AUTOMATION_BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -148,22 +147,6 @@ jobs:
         if: matrix.framework == 'typescript-playwright'
         working-directory: frameworks/typescript-playwright
         run: npm run test:book
-      - name: Run TypeScript Playwright extended scenarios
-        if: >-
-          matrix.framework == 'typescript-playwright' &&
-          env.HAS_VERCEL_AUTOMATION_BYPASS == 'true'
-        working-directory: frameworks/typescript-playwright
-        env:
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-        run: npx playwright test --project=api --project=desktop-chromium
-      - name: Record skipped TypeScript Playwright extended scenarios
-        if: >-
-          matrix.framework == 'typescript-playwright' &&
-          env.HAS_VERCEL_AUTOMATION_BYPASS != 'true'
-        run: |
-          echo "## TypeScript Playwright extended scenarios" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Skipped because VERCEL_AUTOMATION_BYPASS_SECRET is not configured." >> "$GITHUB_STEP_SUMMARY"
       - name: Run TypeScript Cypress scenarios
         if: matrix.framework == 'typescript-cypress'
         working-directory: frameworks/typescript-cypress
@@ -175,25 +158,6 @@ jobs:
           mkdir allure-results
           cp -a allure-results-book/. allure-results/
           cp -a allure-results-mobile/. allure-results/
-      - name: Run TypeScript Cypress extended scenarios
-        if: >-
-          matrix.framework == 'typescript-cypress' &&
-          env.HAS_VERCEL_AUTOMATION_BYPASS == 'true'
-        working-directory: frameworks/typescript-cypress
-        env:
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-          ALLURE_RESULTS_DIR: allure-results-extended
-        # The extended specs run one at a time. Cypress restarts the browser per
-        # spec, which spaces the requests out enough that the hosted traffic
-        # protection keeps answering with the application instead of a challenge.
-        run: |
-          for spec in tests/api/auth_health tests/api/products tests/api/cart \
-                      tests/api/orders tests/api/query tests/api/graphql \
-                      tests/ui/auth_shell_store_products tests/ui/cart_checkout_orders \
-                      tests/ui/playground_catalog tests/ui/query_lab_mobile; do
-            npx cypress run --spec "$spec.spec.ts"
-          done
-          cp -a allure-results-extended/. allure-results/
       - name: Setup Python
         if: matrix.framework == 'python-playwright'
         uses: actions/setup-python@v5
@@ -208,22 +172,6 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps chromium
           pytest tests/api/test_product_crud.py tests/ui/test_playground_flaky.py tests/ui/test_product_purchase_traceability.py
-      - name: Run Python Playwright extended scenarios
-        if: >-
-          matrix.framework == 'python-playwright' &&
-          env.HAS_VERCEL_AUTOMATION_BYPASS == 'true'
-        working-directory: frameworks/python-playwright
-        env:
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-        run: pytest -m extended
-      - name: Record skipped Python Playwright extended scenarios
-        if: >-
-          matrix.framework == 'python-playwright' &&
-          env.HAS_VERCEL_AUTOMATION_BYPASS != 'true'
-        run: |
-          echo "## Python Playwright extended scenarios" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Skipped because VERCEL_AUTOMATION_BYPASS_SECRET is not configured." >> "$GITHUB_STEP_SUMMARY"
       - name: Setup Java
         if: matrix.framework == 'java-selenium-rest-assured'
         uses: actions/setup-java@v4
@@ -237,17 +185,6 @@ jobs:
         run: >-
           mvn --batch-mode --errors
           -Dtest=ProductCrudTest,PlaygroundFlakyTest,ProductPurchaseTraceabilityTest
-          test
-      - name: Run Java extended scenarios
-        if: >-
-          matrix.framework == 'java-selenium-rest-assured' &&
-          env.HAS_VERCEL_AUTOMATION_BYPASS == 'true'
-        working-directory: frameworks/java-selenium-rest-assured
-        env:
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-        run: >-
-          mvn --batch-mode --errors
-          -Dtest=AuthHealthTest,CartTest,GraphqlTest,OrdersTest,ProductsTest,QueryTest,AuthShellStoreProductsTest,CartCheckoutOrdersTest,PlaygroundCatalogTest,QueryLabMobileTest
           test
       - name: Generate Allure report
         if: always()

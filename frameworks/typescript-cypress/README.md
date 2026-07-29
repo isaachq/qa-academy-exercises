@@ -42,44 +42,13 @@ consecutive batches as a substitute for a full-suite run.
 `npm test`, `npm run test:api`, `npm run test:ui` and `npm run test:desktop` are full-catalog
 commands and are reserved for internal maintainer validation.
 
-The Book executions are exempt: they are a fixed, small batch and never use the internal bypass.
+The Book executions are exempt: they are a fixed, small batch and can always be run together.
 
 ```bash
 npm run test:book
 npm run test:mobile
 ```
 
-## Internal maintainer validation
-
-Only maintainers may execute the complete extended catalogs. Internal validation reads
-`VERCEL_AUTOMATION_BYPASS_SECRET` from an untracked local `.env` or from the CI secret store. When
-present:
-
-- `helpers/api_response.ts` adds `x-vercel-protection-bypass` and `x-vercel-set-bypass-cookie: true`
-  to every API request;
-- the overwritten `cy.visit` in `fixtures/support.ts` adds the same headers to every page load;
-- each test primes the bypass cookie once, so the XHRs the application itself issues inherit it.
-
-The bypass value must never be committed, copied into examples, or distributed with the public
-exercises. Raw internal results and video directories may contain request metadata and must remain
-private.
-
-Maintainer-only full-catalog commands:
-
-```bash
-npm run test:api
-npm run test:ui
-```
-
-Even with the bypass, run one spec file per Cypress invocation rather than the whole catalog in a
-single run. Cypress restarts the browser between specs, which spaces the requests out enough that
-the traffic protection keeps answering with the application instead of a `403` challenge page. The
-CI job does exactly that. `UI-QUERY-004` issues several real queries plus a cooldown, so it is
-worth running on its own.
-
-In GitHub Actions, the extended Cypress steps run only when the repository secret
-`VERCEL_AUTOMATION_BYPASS_SECRET` exists. Without it, the extended step is marked as skipped while
-the Book executions continue to run.
 
 ## Reports
 

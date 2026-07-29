@@ -11,7 +11,6 @@ export API_KEY=replace-me
 export UI_EMAIL=replace-me@example.com
 export UI_PASSWORD=replace-me
 export DEVICE_PROFILE=desktop
-export VERCEL_AUTOMATION_BYPASS_SECRET=replace-me
 mvn test
 allure generate --single-file target/allure-results --clean -o allure-report
 ```

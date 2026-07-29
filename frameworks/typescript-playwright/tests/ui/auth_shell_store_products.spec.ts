@@ -1,5 +1,5 @@
 import { allure } from 'allure-playwright';
-import { environment, vercelAutomationHeaders } from '../../config/environment.js';
+import { environment } from '../../config/environment.js';
 import { teachingData } from '../../data/test_data.js';
 import { test, expect } from '../../fixtures/test.js';
 import { step } from '../../helpers/steps.js';
@@ -14,10 +14,7 @@ async function labels(feature: string, story: string) {
 
 test('[UI-AUTH-001] Valid login preserves an authenticated session', async ({ browser }) => {
   await labels('Authentication UI', 'UI-AUTH-001 - Valid login');
-  const context = await browser.newContext({ extraHTTPHeaders: vercelAutomationHeaders() });
-  // Seed the Vercel bypass cookie so the application's own XHRs reuse it,
-  // mirroring the cy.request pre-seed that the Cypress beforeEach performs.
-  await context.request.get(environment.baseUrl, { failOnStatusCode: false });
+  const context = await browser.newContext();
   await context.addInitScript(() => {
     localStorage.setItem('qa-academy-terms-consent-v1', 'accepted');
   });
@@ -45,7 +42,7 @@ test('[UI-AUTH-001] Valid login preserves an authenticated session', async ({ br
 
 test('[UI-AUTH-002] Invalid login displays a traceable error', async ({ browser }) => {
   await labels('Authentication UI', 'UI-AUTH-002 - Invalid login');
-  const context = await browser.newContext({ extraHTTPHeaders: vercelAutomationHeaders() });
+  const context = await browser.newContext();
   await context.addInitScript(() => {
     localStorage.setItem('qa-academy-terms-consent-v1', 'accepted');
   });
@@ -68,7 +65,7 @@ test('[UI-AUTH-002] Invalid login displays a traceable error', async ({ browser 
 
 test('[UI-SHELL-001] Accepting the Terms Gate persists consent', async ({ browser }) => {
   await labels('Application shell UI', 'UI-SHELL-001 - Accept Terms Gate');
-  const context = await browser.newContext({ extraHTTPHeaders: vercelAutomationHeaders() });
+  const context = await browser.newContext();
   await context.addInitScript(({ apiKey, email }) => {
     localStorage.setItem('api_token', apiKey);
     localStorage.setItem('user_email', email);

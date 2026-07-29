@@ -48,12 +48,12 @@ def pytest_collection_modifyitems(
     extended = [
         item for item in items if not is_book_case(traceability_id(item.function))
     ]
-    if len(extended) > MAX_PUBLIC_BATCH and not environment.has_automation_bypass:
+    if len(extended) > MAX_PUBLIC_BATCH:
         warnings.warn(
             f"Public execution policy: {len(extended)} extended tests were selected. "
             f"The public host is protected against automated traffic, so learners run at "
             f"most {MAX_PUBLIC_BATCH} extended tests per command, for example "
-            f"`pytest --ids=API-AUTH-001`. Complete catalog runs are reserved for "
-            f"maintainer validation with VERCEL_AUTOMATION_BYPASS_SECRET configured.",
+            f"`pytest --ids=API-AUTH-001`. The 4 BOOK tests can always be executed together.",
             stacklevel=1,
         )
+

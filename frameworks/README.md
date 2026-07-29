@@ -33,17 +33,13 @@ Every project implements the core teaching scenarios (Book tests):
 
 In addition, every project executes the complete extended catalog: 36 UI cases and 37 API cases (74 extended tests / 78 total in Playwright and Cypress; 77 extended tests / 81 total in Java due to JUnit 5 test method granularity for deterministic Selenium browser tests without network interception mocks).
 
-## Modular Automation Bypass & Public Execution Policy
+## Public Execution Policy
 
-All frameworks handle the Vercel automation bypass modularly:
-- If `VERCEL_AUTOMATION_BYPASS_SECRET` is configured in your environment, the framework automatically adds `x-vercel-protection-bypass` and `x-vercel-set-bypass-cookie` headers.
-- If `VERCEL_AUTOMATION_BYPASS_SECRET` is omitted, these headers are dynamically omitted.
-
-> [!WARNING]
-> **Avoid False Perceptions of Flakiness:**
-> - The **4 Book Scenarios** never send bypass headers and can always be run together.
-> - Running all **73 extended scenarios** in a public/hosted environment without `VERCEL_AUTOMATION_BYPASS_SECRET` will trigger hosted Vercel traffic protection challenges, causing requests to fail or be throttled, creating a **false perception that tests are flaky**.
-> - Public learners running without `VERCEL_AUTOMATION_BYPASS_SECRET` must run extended tests **1 test at a time** (or a maximum batch of 1–3 tests by ID). Full extended suite runs are reserved for internal maintainers with the bypass secret.
+> [!NOTE]
+> **Public Execution Policy:**
+> - The **4 Book Scenarios** can always be executed together cleanly without restrictions.
+> - Running all **73 extended scenarios** in a public/hosted environment simultaneously will trigger hosted traffic protection challenges, causing requests to fail or be throttled, creating a **false perception that tests are flaky**.
+> - Public learners executing against hosted environments must run extended tests **1 test at a time** (or a maximum batch of 1–3 tests by ID).
 
 ## Credentials Security
 
@@ -57,6 +53,6 @@ The four projects use the same test titles and Allure step names declared in eac
 
 The workflow compiles and runs all four projects sequentially (`max-parallel: 1`):
 
-1. Secrets (`QA_ACADEMY_API_KEY`, `QA_ACADEMY_UI_EMAIL`, `QA_ACADEMY_UI_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`) are injected via GitHub Actions secrets.
+1. Secrets (`QA_ACADEMY_API_KEY`, `QA_ACADEMY_UI_EMAIL`, `QA_ACADEMY_UI_PASSWORD`) are injected via GitHub Actions secrets.
 2. Push or update a pull request, or open **Actions → Frameworks CI → Run workflow**.
 3. Open the run summary to download the Allure report artifact.

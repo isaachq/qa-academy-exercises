@@ -78,7 +78,7 @@ graph TD
 | **5. Fixtures** | `fixtures` | Manages test setup, browser context creation, authenticated state injection, dependency injection, and teardown cleanup. |
 | **6. Helpers** | `helpers` | Common utilities including Allure step reporting wrappers (`step()`), unique test name generators (`uniqueProductName()`), and incident loggers. |
 | **7. Data** | `data` | Static test constants, teaching data definitions, purchase quantities, and payload builder templates. |
-| **8. Config** | `config` | Environment variables loader (`BASE_URL`, `API_KEY`, `UI_EMAIL`, `UI_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `DEVICE_PROFILE`). |
+| **8. Config** | `config` | Environment variables loader (`BASE_URL`, `API_KEY`, `UI_EMAIL`, `UI_PASSWORD`, `DEVICE_PROFILE`). |
 
 ---
 
@@ -122,17 +122,11 @@ All 4 frameworks are executed sequentially in GitHub Actions (`.github/workflows
 
 ---
 
-## 6. Modular Automation Bypass & Public Execution Policy
-
-### Modular Bypass Header Handling
-All four frameworks implement **modular Vercel automation bypass logic**:
-- **Bypass Present**: If `VERCEL_AUTOMATION_BYPASS_SECRET` is set in `.env` or CI environment, the framework context automatically attaches the deployment protection headers:
-  - `x-vercel-protection-bypass: <SECRET>`
-  - `x-vercel-set-bypass-cookie: true`
-- **Bypass Omitted**: If `VERCEL_AUTOMATION_BYPASS_SECRET` is empty or omitted, these headers are dynamically omitted from all HTTP/browser contexts.
+## 6. Public Execution Policy
 
 > [!IMPORTANT]
 > **Book Tests vs. Extended Suite Execution Policy:**
-> 1. **Book Tests (4 Scenarios)**: `BOOK-TEST-UI-001` (Desktop), `BOOK-TEST-UI-001` (Mobile), `BOOK-TEST-UI-002`, and `BOOK-TEST-API-001` NEVER send bypass headers and can ALWAYS be executed together in full without issue.
-> 2. **Extended Suite (73 Scenarios)**: Attempting to run all 73 extended tests simultaneously in public environments without `VERCEL_AUTOMATION_BYPASS_SECRET` will trigger hosted Vercel traffic protection and rate-limiting. This will cause edge challenges and throttling, creating a **false perception that tests are flaky**.
-> 3. **Public Learners Execution**: Without the bypass secret, public users must run extended tests **1 test at a time** (or max batch of 1–3 tests filtered by Test ID) per command. Full extended suite execution is reserved for internal maintainers with `VERCEL_AUTOMATION_BYPASS_SECRET`.
+> 1. **Book Tests (4 Scenarios)**: `BOOK-TEST-UI-001` (Desktop), `BOOK-TEST-UI-001` (Mobile), `BOOK-TEST-UI-002`, and `BOOK-TEST-API-001` can ALWAYS be executed together in full without issue.
+> 2. **Extended Suite (73 Scenarios)**: Attempting to run all 73 extended tests simultaneously in public hosted environments will trigger hosted traffic protection and rate-limiting. This will cause edge challenges and throttling, creating a **false perception that tests are flaky**.
+> 3. **Public Learners Execution**: Public users executing against hosted environments must run extended tests **1 test at a time** (or max batch of 1–3 tests filtered by Test ID) per command.
+

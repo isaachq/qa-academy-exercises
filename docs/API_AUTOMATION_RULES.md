@@ -48,8 +48,8 @@ The same query transport rules apply to `/api/orders/query`.
 
 - The complete API command lists 39 executions: 38 extended executions and one Book execution.
   The extended cases are public teaching examples, not a public load suite. Against the hosted
-  Vercel environment, public users must select one test or a maximum batch of three tests by
-  traceability ID. Full-catalog execution is reserved for maintainers with the automation bypass.
+  environment, public users must select one test or a maximum batch of three tests by
+  traceability ID.
 - Assert the media type before parsing JSON.
 - Capture `X-QA-Incident-Id` on every non-2xx response and attach it to the test report.
 - Retry only `429`, honoring `Retry-After` and using a bounded attempt count.
@@ -67,10 +67,7 @@ The same query transport rules apply to `/api/orders/query`.
   network.
 - On edge responses, record `X-Vercel-Mitigated`, `X-Vercel-Id`, and whether a challenge cookie is
   present.
-- The Vercel automation bypass is maintainer-only. Load `VERCEL_AUTOMATION_BYPASS_SECRET` from an
-  untracked local environment or the CI secret store; never hardcode, log, commit, or publish it.
-- Internal non-Book Playwright projects send `x-vercel-protection-bypass` and
-  `x-vercel-set-bypass-cookie: true`. Book projects must never receive either header.
+
 
 ## TypeScript Playwright support
 

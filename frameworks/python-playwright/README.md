@@ -36,35 +36,15 @@ pytest --ids=UI-CART-001,UI-CART-002,UI-CART-003
 
 `--ids` reads the traceability ID from each test's Allure title, so a case is selected without
 knowing its file. An unknown ID fails before the first request, and a selection larger than three
-without the maintainer bypass reports the policy as a warning. `TEST_IDS` in `.env` provides a
-default selection.
+reports the policy as a warning. `TEST_IDS` in `.env` provides a default selection.
 
-The Book scenarios are exempt: they are a fixed, small batch and never use the internal bypass.
+The Book scenarios are exempt: they are a fixed, small batch and can always be run together.
 
 ```bash
 pytest tests/api/test_product_crud.py tests/ui/test_playground_flaky.py \
        tests/ui/test_product_purchase_traceability.py
 ```
 
-## Internal maintainer validation
-
-Only maintainers may execute the complete extended catalog. Internal validation reads
-`VERCEL_AUTOMATION_BYPASS_SECRET` from an untracked local `.env` or from the CI secret store. When
-present, `config/environment.py` adds `x-vercel-protection-bypass` and
-`x-vercel-set-bypass-cookie: true` to every API request and to every browser context, so the XHRs
-the application itself issues inherit the bypass.
-
-The bypass value must never be committed, copied into examples, or distributed with the public
-exercises. Raw internal Allure results may contain request metadata and must remain private.
-
-```bash
-pytest -m extended     # maintainers only
-pytest -m "extended and api"
-```
-
-In GitHub Actions the extended step runs only when the repository secret
-`VERCEL_AUTOMATION_BYPASS_SECRET` exists. Without it the step is reported as skipped while the Book
-scenarios continue to run.
 
 ## Reports
 
