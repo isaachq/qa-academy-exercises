@@ -64,9 +64,9 @@ export default defineConfig({
           return nodeApiRequest(
             config.baseUrl ?? 'https://qaacademyabc.xyz',
             request,
-            process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
           );
         },
+
         /**
          * Cypress downloads land on disk instead of exposing a download event,
          * so the Playground download case reads the folder to learn the name
@@ -89,9 +89,6 @@ export default defineConfig({
     uiEmail: process.env.UI_EMAIL,
     uiPassword: process.env.UI_PASSWORD,
     deviceProfile: process.env.DEVICE_PROFILE ?? 'desktop',
-    // Maintainer-only. Empty for public learners, which keeps every request and
-    // page load on the same protected path a learner experiences.
-    vercelBypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? '',
     // Traceability IDs selected with `--env ids=API-CART-001,API-CART-002`.
     ids: process.env.TEST_IDS ?? '',
   },

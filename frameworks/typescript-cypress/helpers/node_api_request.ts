@@ -39,7 +39,6 @@ const parseBody = (raw: string): unknown => {
 export function nodeApiRequest(
   baseUrl: string,
   request: NodeApiRequest,
-  bypassSecret?: string,
   redirectsRemaining = 3,
   cookie?: string,
 ): Promise<NodeApiResponse> {
@@ -50,10 +49,6 @@ export function nodeApiRequest(
   if (serializedBody !== undefined) {
     headers['Content-Type'] ??= 'application/json';
     headers['Content-Length'] = Buffer.byteLength(serializedBody).toString();
-  }
-  if (bypassSecret) {
-    headers['x-vercel-protection-bypass'] = bypassSecret;
-    headers['x-vercel-set-bypass-cookie'] = 'true';
   }
   if (cookie) headers.Cookie = cookie;
 
@@ -77,7 +72,6 @@ export function nodeApiRequest(
           void nodeApiRequest(
             target.toString(),
             { ...request, url: location },
-            bypassSecret,
             redirectsRemaining - 1,
             setCookie ?? cookie,
           ).then(resolve, reject);

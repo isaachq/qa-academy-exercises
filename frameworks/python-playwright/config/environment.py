@@ -35,22 +35,9 @@ class Environment:
         return os.getenv("DEVICE_PROFILE", "desktop").strip().lower() or "desktop"
 
     @property
-    def has_automation_bypass(self) -> bool:
-        return bool(os.getenv("VERCEL_AUTOMATION_BYPASS_SECRET", "").strip())
-
-    @property
-    def automation_headers(self) -> dict[str, str]:
-        secret = os.getenv("VERCEL_AUTOMATION_BYPASS_SECRET", "").strip()
-        if not secret:
-            return {}
-        return {
-            "x-vercel-protection-bypass": secret,
-            "x-vercel-set-bypass-cookie": "true",
-        }
-
-    @property
     def auth_headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self.api_key}"}
 
 
 environment = Environment()
+

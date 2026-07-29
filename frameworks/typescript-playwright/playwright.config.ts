@@ -1,9 +1,8 @@
 import 'dotenv/config';
 import { defineConfig, devices } from '@playwright/test';
-import { environment, vercelAutomationHeaders } from './config/environment.js';
+import { environment } from './config/environment.js';
 
 const bookTestPattern = /BOOK-TEST/;
-const automationHeaders = vercelAutomationHeaders();
 
 const projects = [
   {
@@ -52,7 +51,6 @@ export default defineConfig({
   ],
   use: {
     baseURL: environment.baseUrl,
-    extraHTTPHeaders: automationHeaders,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
