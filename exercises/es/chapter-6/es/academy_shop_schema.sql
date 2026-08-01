@@ -1,6 +1,6 @@
--- academy_shop: mini esquema de enseñanza para el Capítulo 6 de Zero to SDET.
--- No tiene relación con la aplicación en vivo de QA Academy Platform: es un
--- esquema propio, creado para practicar SQL de básico a avanzado.
+-- academy_shop: teaching mini-schema for Chapter 6 of Zero to SDET.
+-- Not related to the live QA Academy Platform application: this is a
+-- standalone schema, built to practice SQL from basic to advanced.
 
 DROP TABLE IF EXISTS audit_log CASCADE;
 DROP TABLE IF EXISTS order_items CASCADE;

@@ -1,8 +1,8 @@
--- academy_shop: datos semilla ficticios para el Capítulo 6 de Zero to SDET.
--- Todos los nombres, correos, salarios y direcciones son inventados para
--- fines de enseñanza.
+-- academy_shop: fictional seed data for Chapter 6 of Zero to SDET.
+-- All names, emails, salaries and addresses are invented for
+-- teaching purposes.
 
--- countries (1..6) — South Korea queda sin ningún empleado, a propósito.
+-- countries (1..6): South Korea is left with zero employees assigned, on purpose.
 INSERT INTO countries (country_name, region) VALUES
   ('Japan', 'Asia'),
   ('Germany', 'Europe'),
@@ -11,8 +11,8 @@ INSERT INTO countries (country_name, region) VALUES
   ('Brazil', 'South America'),
   ('South Korea', 'Asia');
 
--- employees (1..9) — jerarquía: Hannah (CEO) -> Kenji/Ngozi (managers) -> resto.
--- Arjun Mehta gana mas que su manager Kenji Watanabe, a proposito (ejercicio de entrevista).
+-- employees (1..9): hierarchy is Hannah (CEO) -> Kenji/Ngozi (managers) -> the rest.
+-- Arjun Mehta earns more than his manager Kenji Watanabe, on purpose (interview exercise).
 INSERT INTO employees (first_name, last_name, email, department, salary, hire_date, manager_id, country_id) VALUES
   ('Hannah', 'Fischer',  'hannah.fischer@example.test',  'Executive', 180000.00, '2019-02-01', NULL, 2),
   ('Kenji',  'Watanabe', 'kenji.watanabe@example.test',  'Sales',      95000.00, '2020-03-10', 1,    1),
@@ -24,7 +24,7 @@ INSERT INTO employees (first_name, last_name, email, department, salary, hire_da
   ('Greta',  'Hoffmann', 'greta.hoffmann@example.test',  'Support',    47000.00, '2022-04-04', 3,    2),
   ('Yuki',   'Tanaka',   'yuki.tanaka@example.test',     'Support',    51000.00, '2023-01-09', 3,    1);
 
--- addresses (1..8) — Yuki Tanaka (employee_id 9) se queda sin direccion registrada.
+-- addresses (1..8): Yuki Tanaka (employee_id 9) is left with no registered address.
 INSERT INTO addresses (employee_id, street, city, postal_code, country_id) VALUES
   (1, 'Unter den Linden 12',    'Berlin',            '10117', 2),
   (2, 'Shibuya 2-21',           'Tokyo',             '150-0002', 1),
@@ -35,47 +35,47 @@ INSERT INTO addresses (employee_id, street, city, postal_code, country_id) VALUE
   (7, 'Ahmadu Bello Way 7',     'Abuja',             '900211', 3),
   (8, 'Speicherstadt 3',        'Hamburg',           '20457', 2);
 
--- categories (1..8) — Wearables (8) se queda sin productos, a proposito.
+-- categories (1..8): Wearables (8) is left with no products, on purpose.
 INSERT INTO categories (name, description, parent_category_id) VALUES
-  ('Electronics',     'Dispositivos y accesorios electronicos', NULL),
-  ('Computers',       'Laptops, monitores y perifericos',       1),
-  ('Phones',          'Telefonos y accesorios',                 1),
-  ('Home',            'Articulos para el hogar',                 NULL),
-  ('Kitchen',         'Electrodomesticos y utensilios de cocina', 4),
-  ('Furniture',       'Muebles de oficina y hogar',              4),
-  ('Office Supplies', 'Articulos de papeleria y oficina',        NULL),
-  ('Wearables',       'Categoria nueva, todavia sin productos',  1);
+  ('Electronics',     'Electronic devices and accessories', NULL),
+  ('Computers',       'Laptops, monitors and peripherals',       1),
+  ('Phones',          'Phones and accessories',                 1),
+  ('Home',            'Home goods',                 NULL),
+  ('Kitchen',         'Kitchen appliances and utensils', 4),
+  ('Furniture',       'Office and home furniture',              4),
+  ('Office Supplies', 'Office and stationery supplies',        NULL),
+  ('Wearables',       'New category, no products yet',  1);
 
--- products (1..21) — el producto 21 se queda sin categoria, a proposito.
+-- products (1..21): product 21 is left without a category, on purpose.
 INSERT INTO products (name, description, price, stock, category_id) VALUES
-  ('Laptop Pro 14',          'Laptop de 14 pulgadas para uso profesional', 1299.99, 15, 2),
-  ('Laptop Air 13',          'Laptop ligera de 13 pulgadas',                999.50, 20, 2),
-  ('Mechanical Keyboard',    'Teclado mecanico retroiluminado',             89.90, 40, 2),
-  ('Wireless Mouse',         'Mouse inalambrico ergonomico',                25.50, 100, 2),
-  ('27-inch Monitor',        'Monitor IPS de 27 pulgadas',                 249.00, 30, 2),
-  ('Smartphone X12',         'Telefono gama alta',                         799.00, 25, 3),
-  ('Smartphone Lite',        'Telefono gama media',                        399.00, 50, 3),
-  ('Phone Case Clear',       'Funda transparente',                          12.99, 200, 3),
-  ('Screen Protector',       'Mica de vidrio templado',                      8.50, 300, 3),
-  ('Blender Pro',            'Licuadora de alta potencia',                  65.00, 35, 5),
-  ('Coffee Maker Deluxe',    'Cafetera programable',                        89.00, 28, 5),
-  ('Non-stick Pan Set',      'Juego de sartenes antiadherentes',            45.00, 40, 5),
-  ('Electric Kettle',        'Hervidor electrico 1.7L',                     32.00, 60, 5),
-  ('Office Chair Ergo',      'Silla ergonomica de oficina',                189.00, 18, 6),
-  ('Standing Desk',          'Escritorio ajustable en altura',             349.00, 12, 6),
-  ('Bookshelf Oak',          'Libreros de madera de roble',                129.00, 10, 6),
-  ('Notebook Pack x5',       'Paquete de 5 libretas',                        9.99, 500, 7),
-  ('Ballpoint Pen Box',      'Caja de boligrafos',                           6.50, 800, 7),
-  ('Sticky Notes Pack',      'Paquete de notas adhesivas',                   4.25, 600, 7),
-  ('Stapler Heavy Duty',     'Engrapadora de alta capacidad',               14.75, 150, 7),
-  ('Clearance Mystery Item', 'Articulo de liquidacion sin categoria',        19.99, 5, NULL),
-  ('USB-C Hub',              'Hub USB-C de 6 puertos, aun sin ventas',      34.99, 45, 2),
-  ('Desk Lamp LED',          'Lampara LED de escritorio, aun sin ventas',   27.00, 25, 6),
-  ('Whiteboard 90x60',       'Pizarron blanco, aun sin ventas',             55.00,  8, 7);
+  ('Laptop Pro 14',          '14-inch laptop for professional use', 1299.99, 15, 2),
+  ('Laptop Air 13',          'Lightweight 13-inch laptop',                999.50, 20, 2),
+  ('Mechanical Keyboard',    'Backlit mechanical keyboard',             89.90, 40, 2),
+  ('Wireless Mouse',         'Ergonomic wireless mouse',                25.50, 100, 2),
+  ('27-inch Monitor',        '27-inch IPS monitor',                 249.00, 30, 2),
+  ('Smartphone X12',         'High-end phone',                         799.00, 25, 3),
+  ('Smartphone Lite',        'Mid-range phone',                        399.00, 50, 3),
+  ('Phone Case Clear',       'Clear case',                          12.99, 200, 3),
+  ('Screen Protector',       'Tempered glass screen protector',                      8.50, 300, 3),
+  ('Blender Pro',            'High-power blender',                  65.00, 35, 5),
+  ('Coffee Maker Deluxe',    'Programmable coffee maker',                        89.00, 28, 5),
+  ('Non-stick Pan Set',      'Non-stick pan set',            45.00, 40, 5),
+  ('Electric Kettle',        'Electric kettle 1.7L',                     32.00, 60, 5),
+  ('Office Chair Ergo',      'Ergonomic office chair',                189.00, 18, 6),
+  ('Standing Desk',          'Height-adjustable desk',             349.00, 12, 6),
+  ('Bookshelf Oak',          'Oak wood bookshelf',                129.00, 10, 6),
+  ('Notebook Pack x5',       'Pack of 5 notebooks',                        9.99, 500, 7),
+  ('Ballpoint Pen Box',      'Box of ballpoint pens',                           6.50, 800, 7),
+  ('Sticky Notes Pack',      'Pack of sticky notes',                   4.25, 600, 7),
+  ('Stapler Heavy Duty',     'Heavy duty stapler',               14.75, 150, 7),
+  ('Clearance Mystery Item', 'Clearance item without a category',        19.99, 5, NULL),
+  ('USB-C Hub',              '6-port USB-C hub, no sales yet',      34.99, 45, 2),
+  ('Desk Lamp LED',          'LED desk lamp, no sales yet',   27.00, 25, 6),
+  ('Whiteboard 90x60',       'Whiteboard, no sales yet',             55.00,  8, 7);
 
--- customers (1..12) — cadena de referidos via referred_by. Nombres de origenes diversos
--- a proposito: el libro se publica en espaniol e ingles y el dataset no debia leerse
--- como "solo nombres latinos".
+-- customers (1..12): referral chain via referred_by. Names of diverse origins
+-- on purpose: the book is published in both Spanish and English, and the dataset
+-- should not read as "only Latin names".
 INSERT INTO customers (name, email, created_at, referred_by) VALUES
   ('Amara Okonkwo',  'amara.okonkwo@example.test',   '2026-01-10', NULL),
   ('Liam OConnor',   'liam.oconnor@example.test',    '2026-01-15', 1),
@@ -90,7 +90,7 @@ INSERT INTO customers (name, email, created_at, referred_by) VALUES
   ('Sophie Dubois',  'sophie.dubois@example.test',   '2026-03-10', 10),
   ('Kwame Mensah',   'kwame.mensah@example.test',    '2026-03-15', 6);
 
--- orders (1..26). employee_id: 4=Lukas, 5=Arjun, 6=Camila (reps de ventas), NULL = autoservicio.
+-- orders (1..26). employee_id: 4=Lukas, 5=Arjun, 6=Camila (sales reps), NULL = self-service.
 INSERT INTO orders (customer_id, employee_id, status, created_at) VALUES
   (1,  4,    'paid',      '2026-06-15 10:00'),
   (2,  5,    'paid',      '2026-06-15 15:30'),
@@ -119,7 +119,7 @@ INSERT INTO orders (customer_id, employee_id, status, created_at) VALUES
   (1,  6,    'paid',      '2026-07-25 15:45'),
   (2,  NULL, 'pending',   '2026-07-28 11:10');
 
--- order_items (uno o dos productos por orden; unit_price copia el precio del producto al momento de la orden).
+-- order_items (one or two products per order; unit_price copies the product price at order time).
 INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES
   (1,  1,  1, 1299.99), (1,  4,  2,  25.50),
   (2,  6,  1,  799.00), (2,  8,  1,  12.99),
