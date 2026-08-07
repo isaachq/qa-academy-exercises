@@ -1,0 +1,64 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: integration
+
+jobs:
+  test:
+    name: test on ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    env:
+      BASE_URL: ${{ vars.BASE_URL || 'https://en.wikipedia.org' }}
+      LOAD_TIME_THRESHOLD_MS: ${{ vars.LOAD_TIME_THRESHOLD_MS || '4000' }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: integration/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install the browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Run the tests
+        run: npx playwright test --project=${{ matrix.browser }}
+
+      - name: Upload the failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence-${{ matrix.browser }}
+          path: |
+            integration/test-results/
+            integration/playwright-report/
+          retention-days: 7
+
+      - name: Upload the raw Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.browser }}
+          path: integration/allure-results/
+          retention-days: 7
