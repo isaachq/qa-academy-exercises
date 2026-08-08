@@ -12,6 +12,4 @@ export const Actions = {
   GOTO_SEARCH: "Navigate to the search results page",
   READ_RESULT_LINKS: "Read the result links",
   OPEN_ARTICLE: "Open the article",
-  CHECK_HEADING: "Check that the heading is visible",
-  MEASURE_LOAD_TIME: "Measure the load time",
 } as const;

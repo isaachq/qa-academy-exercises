@@ -46,10 +46,17 @@ jobs:
           node-version: 22
 
       - name: Restore the report history
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p allure-results/history
-          if [ -d gh-pages-history ]; then
-            cp -r gh-pages-history/. allure-results/history/
+          PREVIOUS=$(gh run list --workflow report.yml --status success --limit 1 \
+            --json databaseId --jq '.[0].databaseId // empty')
+          if [ -n "$PREVIOUS" ]; then
+            echo "Restoring history from run $PREVIOUS"
+            gh run download "$PREVIOUS" --name allure-history --dir allure-results/history
+          else
+            echo "No previous successful run, this report has no trend yet"
           fi
 
       - name: Generate the HTML report
