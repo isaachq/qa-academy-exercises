@@ -1,0 +1,233 @@
+name: Frameworks CI
+
+on:
+  pull_request:
+    paths:
+      - "frameworks/**"
+      - ".github/workflows/frameworks-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "frameworks/**"
+      - ".github/workflows/frameworks-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frameworks-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typescript-playwright:
+    name: TypeScript Playwright checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frameworks/typescript-playwright
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frameworks/typescript-playwright/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Type-check
+        run: npm run typecheck
+      - name: Collect tests
+        run: npm run test:list
+
+  typescript-cypress:
+    name: TypeScript Cypress checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frameworks/typescript-cypress
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frameworks/typescript-cypress/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Type-check
+        run: npm run typecheck
+      - name: Verify Cypress
+        run: npm run verify
+
+  python:
+    name: Python Playwright checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frameworks/python-playwright
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: frameworks/python-playwright/requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall .
+      - name: Collect tests
+        run: pytest --collect-only
+
+  java:
+    name: Java Selenium and REST Assured checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frameworks/java-selenium-rest-assured
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Compile tests
+        run: mvn --batch-mode test-compile
+
+  live-frameworks:
+    name: Live ${{ matrix.framework }}
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        framework:
+          - typescript-playwright
+          - typescript-cypress
+          - python-playwright
+          - java-selenium-rest-assured
+    env:
+      BASE_URL: https://qaacademyabc.xyz
+      API_KEY: ${{ secrets.QA_ACADEMY_API_KEY || secrets.API_KEY }}
+      UI_EMAIL: ${{ secrets.QA_ACADEMY_UI_EMAIL || secrets.UI_EMAIL }}
+      UI_PASSWORD: ${{ secrets.QA_ACADEMY_UI_PASSWORD || secrets.UI_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Require live credentials
+        run: |
+          test -n "$API_KEY"
+          test -n "$UI_EMAIL"
+          test -n "$UI_PASSWORD"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Setup TypeScript Playwright
+        if: matrix.framework == 'typescript-playwright'
+        working-directory: frameworks/typescript-playwright
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Run TypeScript Playwright Book scenarios
+        if: matrix.framework == 'typescript-playwright'
+        working-directory: frameworks/typescript-playwright
+        run: npm run test:book
+      - name: Run TypeScript Cypress scenarios
+        if: matrix.framework == 'typescript-cypress'
+        working-directory: frameworks/typescript-cypress
+        run: |
+          npm ci
+          rm -rf allure-results allure-results-book allure-results-mobile allure-results-extended
+          ALLURE_RESULTS_DIR=allure-results-book npx cypress run --spec "tests/api/product_crud.spec.ts,tests/ui/playground_flaky.spec.ts,tests/ui/product_purchase_traceability.spec.ts"
+          ALLURE_RESULTS_DIR=allure-results-mobile npm run test:mobile
+          mkdir allure-results
+          cp -a allure-results-book/. allure-results/
+          cp -a allure-results-mobile/. allure-results/
+      - name: Setup Python
+        if: matrix.framework == 'python-playwright'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: frameworks/python-playwright/requirements.txt
+      - name: Run Python Playwright Book scenarios
+        if: matrix.framework == 'python-playwright'
+        working-directory: frameworks/python-playwright
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+          pytest tests/api/test_product_crud.py tests/ui/test_playground_flaky.py tests/ui/test_product_purchase_traceability.py
+      - name: Setup Java
+        if: matrix.framework == 'java-selenium-rest-assured'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Run Java Book scenarios
+        if: matrix.framework == 'java-selenium-rest-assured'
+        working-directory: frameworks/java-selenium-rest-assured
+        run: >-
+          mvn --batch-mode --errors
+          -Dtest=ProductCrudTest,PlaygroundFlakyTest,ProductPurchaseTraceabilityTest
+          test
+      - name: Generate Allure report
+        if: always()
+        working-directory: frameworks/${{ matrix.framework }}
+        run: |
+          RESULTS_DIR="allure-results"
+          if [ "${{ matrix.framework }}" = "java-selenium-rest-assured" ]; then
+            RESULTS_DIR="target/allure-results"
+          fi
+          if [ -d "$RESULTS_DIR" ]; then
+            npx --yes allure-commandline@2.35.1 generate --single-file "$RESULTS_DIR" --clean -o allure-report
+            test -s allure-report/index.html
+          fi
+      - name: Upload Allure raw results
+        id: upload-raw
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.framework }}
+          path: |
+            frameworks/${{ matrix.framework }}/allure-results
+            frameworks/${{ matrix.framework }}/target/allure-results
+          if-no-files-found: warn
+      - name: Upload Allure HTML report
+        id: upload-html
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-single-file-report-${{ matrix.framework }}
+          path: frameworks/${{ matrix.framework }}/allure-report/index.html
+          if-no-files-found: warn
+      - name: Upload Java Surefire diagnostics
+        if: always() && matrix.framework == 'java-selenium-rest-assured'
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-${{ matrix.framework }}
+          path: frameworks/java-selenium-rest-assured/target/surefire-reports
+          if-no-files-found: warn
+      - name: Publish run summary
+        if: always()
+        run: |
+          echo "## ${{ matrix.framework }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Result: **${{ job.status }}**" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [Download self-contained Allure HTML report](${{ steps.upload-html.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [Download raw Allure evidence](${{ steps.upload-raw.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"

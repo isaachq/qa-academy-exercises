@@ -1,0 +1,53 @@
+package fixtures;
+
+import config.Environment;
+import java.util.Map;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
+public final class AuthenticatedBrowser {
+    private AuthenticatedBrowser() {}
+
+    public static WebDriver create(boolean mobile) {
+        return create(mobile, true);
+    }
+
+    public static WebDriver create(boolean mobile, boolean authenticated) {
+        ChromeOptions options = new ChromeOptions();
+        options.setPageLoadStrategy(PageLoadStrategy.EAGER);
+        options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
+        if (mobile) {
+            options.setExperimentalOption("mobileEmulation", Map.of(
+                    "deviceMetrics", Map.of("width", 412, "height", 915, "pixelRatio", 2.625),
+                    "userAgent", "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 "
+                            + "(KHTML, like Gecko) Chrome/140.0 Mobile Safari/537.36"));
+        } else {
+            options.addArguments("--window-size=1440,900");
+        }
+        ChromeDriver driver = new ChromeDriver(options);
+        if (!mobile) {
+            driver.manage().window().setSize(new org.openqa.selenium.Dimension(1440, 900));
+        }
+        if (!Environment.automationHeaders().isEmpty()) {
+            driver.executeCdpCommand("Network.enable", Map.of());
+            driver.executeCdpCommand(
+                    "Network.setExtraHTTPHeaders",
+                    Map.of("headers", Environment.automationHeaders()));
+        }
+        driver.get(Environment.BASE_URL);
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("localStorage.setItem('qa-academy-terms-consent-v1', 'accepted')");
+        if (authenticated) {
+            js.executeScript(
+                    "localStorage.setItem('api_token', arguments[0]);"
+                            + "localStorage.setItem('user_email', arguments[1]);",
+                    Environment.required("API_KEY"), Environment.required("UI_EMAIL"));
+        } else {
+            js.executeScript("localStorage.removeItem('api_token');localStorage.removeItem('user_email')");
+        }
+        return driver;
+    }
+}
