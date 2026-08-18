@@ -17,16 +17,32 @@ real traffic protection. Nothing here runs against a mock.
 
 ---
 
+## Two editions, one repository
+
+The book ships in two editions and this repository serves both.
+
+| Edition | Exercise folder |
+|---|---|
+| **English** — *Zero to SDET: Real code, sound judgment, AI as an ally* | [`exercises/en/`](exercises/en/) |
+| **Español** — *Zero to SDET: De Cero a Ingeniero de Automatización* | [`exercises/es/`](exercises/es/) |
+
+The two exercise trees hold the same files. They are kept separate so that the
+page numbers and folder paths printed in each edition resolve exactly as
+printed. `frameworks/`, `integration/` and `docs/` are shared: that code was
+written in English from the start and is identical for both editions.
+
+---
+
 ## Where the book meets the repository
 
-| Chapter | Folder | What you will find |
-|---|---|---|
-| 1 — Python | [`exercises/es/chapter-1/`](exercises/es/chapter-1/) | The practice file, assembled |
-| 2 — Java | [`exercises/es/chapter-2/`](exercises/es/chapter-2/) | The practice file, assembled |
-| 5 — UI and API hands-on | [`frameworks/`](frameworks/) | Four comparable automation projects |
-| 6 — PostgreSQL | [`exercises/es/chapter-6/`](exercises/es/chapter-6/es/) | `academy_shop_schema.sql` and `academy_shop_seed.sql` |
-| 8 — Algorithmic complexity | [`exercises/es/chapter-8/`](exercises/es/chapter-8/) | 44 runnable Python files, standard library only |
-| 9 — CI with GitHub Actions | [`integration/`](integration/) | The page explorer and its pipeline |
+| Chapter | English folder | Español folder | What you will find |
+|---|---|---|---|
+| 1 — Python | [`exercises/en/chapter-1/`](exercises/en/chapter-1/) | [`exercises/es/chapter-1/`](exercises/es/chapter-1/) | The practice file, assembled |
+| 2 — Java | [`exercises/en/chapter-2/`](exercises/en/chapter-2/) | [`exercises/es/chapter-2/`](exercises/es/chapter-2/) | The practice file, assembled |
+| 5 — UI and API hands-on | [`frameworks/`](frameworks/) | [`frameworks/`](frameworks/) | Four comparable automation projects |
+| 6 — PostgreSQL | [`exercises/en/chapter-6/`](exercises/en/chapter-6/) | [`exercises/es/chapter-6/`](exercises/es/chapter-6/es/) | `academy_shop_schema.sql` and `academy_shop_seed.sql` |
+| 8 — Algorithmic complexity | [`exercises/en/chapter-8/`](exercises/en/chapter-8/) | [`exercises/es/chapter-8/`](exercises/es/chapter-8/) | 44 runnable Python files, standard library only |
+| 9 — CI with GitHub Actions | [`integration/`](integration/) | [`integration/`](integration/) | The page explorer and its pipeline |
 
 Supporting documentation lives in [`docs/`](docs/): the [architecture guide](docs/ARCHITECTURE.md)
 with its Mermaid diagram, the [Allure step catalog](docs/ch5_allure_step_catalog.md), the
@@ -110,7 +126,8 @@ Each project is self-contained and documents its own setup:
 
 - [`frameworks/README.md`](frameworks/README.md) — the four Chapter 5 projects
 - [`integration/README.md`](integration/README.md) — the Chapter 9 suite
-- [`exercises/es/chapter-8/README.md`](exercises/es/chapter-8/README.md) — the Chapter 8 files
+- [`exercises/en/chapter-8/README.md`](exercises/en/chapter-8/README.md) — the Chapter 8 files (English edition)
+- [`exercises/es/chapter-8/README.md`](exercises/es/chapter-8/README.md) — the Chapter 8 files (edición en español)
 
 Live tests need credentials. Copy the project's `.env.example` to `.env` and fill in `BASE_URL`,
 `API_KEY`, `UI_EMAIL` and `UI_PASSWORD`. No real credentials are committed anywhere in this
@@ -121,5 +138,9 @@ repository; in CI they come from GitHub Actions secrets.
 ## A note on the code
 
 All code, test names, comments, step labels and configuration in `frameworks/` and
-`integration/` are written in English. The exercises under `exercises/es/` follow the book and
-are in Spanish.
+`integration/` are written in English, and are shared by both editions.
+
+The exercise files themselves — variable names, function names, SQL identifiers — are in
+English in both trees, because that is how the book teaches them. What differs between
+`exercises/en/` and `exercises/es/` is the prose around the code: file headers, chapter
+READMEs and explanatory comments follow the language of the edition you are reading.
