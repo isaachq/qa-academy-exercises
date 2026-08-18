@@ -1,0 +1,38 @@
+# Normaliza los finales de línea para que Windows, macOS y Linux produzcan
+# el mismo contenido en el repositorio.
+#
+# Sin esto, abrir un archivo en Windows lo reescribe con CRLF y git lo reporta
+# como si hubieran cambiado todas sus líneas, aunque el contenido sea idéntico.
+
+# Por defecto: git detecta si un archivo es texto y lo guarda con LF.
+* text=auto eol=lf
+
+# Código y configuración: siempre texto con LF.
+*.py    text eol=lf
+*.ts    text eol=lf
+*.js    text eol=lf
+*.java  text eol=lf
+*.sql   text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.xml   text eol=lf
+*.txt   text eol=lf
+*.ini   text eol=lf
+*.sh    text eol=lf
+*.example text eol=lf
+*.scenario-manifest text eol=lf
+.gitignore     text eol=lf
+.gitattributes text eol=lf
+
+# Binarios: git no los toca.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.pdf  binary
+*.zip  binary
+*.jar  binary
+*.mp4  binary
+*.webm binary
