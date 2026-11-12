@@ -29,6 +29,7 @@ package chapter2.part1;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class PracticeJava {
 
@@ -526,8 +527,8 @@ public class PracticeJava {
 
         // Enhanced for
         System.out.println("\nWith enhanced for:");
-        for (Integer n : nums) {
-            System.out.println(n);
+        for (Integer num : nums) {
+            System.out.println(num);
         }
 
         // Clear ArrayList
@@ -536,7 +537,33 @@ public class PracticeJava {
         System.out.println("Is empty? " + nums.isEmpty());
 
         // ====================================================================
-        // SECTION 14: HASHMAP
+        // SECTION 14: LINKEDLIST
+        // ====================================================================
+
+        // --- LinkedList ---
+        System.out.println("\n=== LINKEDLIST ===");
+
+        // Queue of tests waiting to run
+        LinkedList<String> executionQueue = new LinkedList<>();
+        executionQueue.add("test_login");
+        executionQueue.add("test_search");
+
+        // Add at both ends without shifting the other elements
+        executionQueue.addFirst("test_smoke_health_check");
+        executionQueue.addLast("test_logout");
+        System.out.println("Queue: " + executionQueue);
+        System.out.println("First: " + executionQueue.getFirst());
+        System.out.println("Last: " + executionQueue.getLast());
+
+        // Process the queue: take tests from the front until it is empty
+        while (!executionQueue.isEmpty()) {
+            String nextTest = executionQueue.removeFirst();
+            System.out.println("Running: " + nextTest);
+        }
+        System.out.println("Is empty? " + executionQueue.isEmpty());
+
+        // ====================================================================
+        // SECTION 15: HASHMAP
         // ====================================================================
 
         // --- HashMap ---
@@ -603,7 +630,7 @@ public class PracticeJava {
         System.out.println("\nCapital of Mexico: " + capitals.get("Mexico"));
 
         // ====================================================================
-        // SECTION 15: EXCEPTION HANDLING
+        // SECTION 16: EXCEPTION HANDLING
         // ====================================================================
 
         // --- Exception handling ---
@@ -691,8 +718,9 @@ public class PracticeJava {
 //   11. Methods (no return, with parameters, return values, boolean)
 //   12. Arrays (declare, access, modify, iterate)
 //   13. ArrayList (add, get, set, remove, iterate, clear)
-//   14. HashMap (put, get, containsKey, remove, iterate)
-//   15. Exception handling try/catch/finally (multiple scenarios)
+//   14. LinkedList (addFirst, addLast, getFirst, getLast, removeFirst)
+//   15. HashMap (put, get, containsKey, remove, iterate)
+//   16. Exception handling try/catch/finally (multiple scenarios)
 //
 // If you made it here and wrote all the code manually:
 // Congratulations! You are ready for Chapter 2 Part 2 (OOP).

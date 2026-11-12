@@ -23,7 +23,7 @@ The book ships in two editions and this repository serves both.
 
 | Edition | Exercise folder |
 |---|---|
-| **English** — *Zero to SDET: Real code, sound judgment, AI as an ally* | [`exercises/en/`](exercises/en/) |
+| **English** — *Zero to SDET: From Zero to Automation Engineer* | [`exercises/en/`](exercises/en/) |
 | **Español** — *Zero to SDET: De Cero a Ingeniero de Automatización* | [`exercises/es/`](exercises/es/) |
 
 The two exercise trees hold the same files. They are kept separate so that the
